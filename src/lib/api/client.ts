@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { ENV } from '@constants/env';
+import { ENV } from '@/constants/env';
+import { useAuthStore } from '@/lib/store/auth.store';
 
 const apiClient = axios.create({
     baseURL: ENV.API_URL,
@@ -7,18 +8,20 @@ const apiClient = axios.create({
     headers: { 'Content-Type': 'application/json' },
 });
 
-// 요청 인터셉터: Access Token 자동 주입
 apiClient.interceptors.request.use((config) => {
-    // TODO: Zustand store에서 토큰 가져오기
+    const token = useAuthStore.getState().accessToken;
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
 });
 
-// 응답 인터셉터: 401 시 토큰 갱신
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
-            // TODO: Refresh Token으로 갱신 시도
+            useAuthStore.getState().clearAuth();
+            window.location.href = '/login';
         }
         return Promise.reject(error);
     },
