@@ -7,12 +7,16 @@ export interface MotionListItem {
     sportType: string;
     subCategory: string;
     createdAt: string;
+    completedAt: string | null;
+    errorCode: string | null;
+    errorMessage: string | null;
+    overallScore: number | null;
+    feedback: string | null;
+    improvements: Improvement[] | null;
+    promptVersion: string | null;
 }
 
 export interface MotionDetail extends MotionListItem {
+    sport: { id: number; sportType: string };
     result: AnalysisResult | null;
-    feedback: string | null;
-    overallScore: number | null;
-    improvements: Improvement[] | null;
-    promptVersion: string | null;
 }

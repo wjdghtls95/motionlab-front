@@ -8,7 +8,9 @@ export const MESSAGES = {
     },
     UPLOAD: {
         SIZE_EXCEEDED: `영상 크기는 ${APP_CONFIG.MAX_VIDEO_SIZE_MB}MB 이하만 가능합니다`,
-        TYPE_INVALID: 'MP4 또는 MOV 파일만 업로드 가능합니다',
+        INVALID_TYPE: 'MP4 또는 MOV 파일만 업로드 가능합니다',
+        SELECT_REQUIRED: '종목과 영상 파일을 모두 선택해주세요',
+        UPLOAD_FAILED: '업로드에 실패했습니다. 다시 시도해주세요',
         UPLOADING: '업로드 중...',
     },
     ANALYSIS: {
