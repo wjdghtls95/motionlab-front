@@ -1,170 +1,169 @@
 'use client';
 
-import {useState, useRef, useEffect} from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
-import { Label } from '@components/ui/label';
-import { useSports } from '@lib/hooks/use-sports';
-import { useUpload } from '@lib/hooks/use-upload';
-import { useAuthStore } from '@lib/store/auth.store';
-import { ROUTES } from '@constants/routes';
-import { MESSAGES } from '@constants/messages';
-import { APP_CONFIG } from '@constants/config';
+import { Loader2 } from 'lucide-react';
+import Breadcrumb from '@/components/common/Breadcrumb';
+import CategoryStep from '@/components/upload/CategoryStep';
+import SportStep from '@/components/upload/SportStep';
+import FileUploadStep from '@/components/upload/FileUploadStep';
+import UploadProgressBar from '@/components/upload/UploadProgressBar';
+import { useSports } from '@/lib/hooks/use-sports';
+import { useUpload } from '@/lib/hooks/use-upload';
+import { useThemeStore } from '@/lib/store/theme.store';
+import { useToastStore } from '@/lib/store/toast.store';
+import { ROUTES } from '@/constants/routes';
+import { APP_CONFIG } from '@/constants/config';
+import { MESSAGES } from '@/constants/messages';
+import type { Sport } from '@/lib/api/sport.api';
+
+type UploadStep = 'category' | 'sport' | 'file';
 
 export default function UploadPage() {
     const router = useRouter();
-    const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-    const [isReady, setIsReady] = useState(false);
-
+    const addToast = useToastStore((s) => s.addToast);
+    const theme = useThemeStore((s) => s.theme);
+    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
     const { data: sports, isLoading: sportsLoading } = useSports();
-    const upload = useUpload();
+    const uploadMutation = useUpload();
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [selectedSportId, setSelectedSportId] = useState<number | null>(null);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [error, setError] = useState('');
+    const [step, setStep] = useState<UploadStep>('category');
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
+    const [file, setFile] = useState<File | null>(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadError, setUploadError] = useState('');
 
-    // persist 복원 대기 + 미인증 리다이렉트
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            if (!useAuthStore.getState().isAuthenticated) {
-                router.push(ROUTES.LOGIN);
-            } else {
-                setIsReady(true);
-            }
-        }, 100);
-        return () => clearTimeout(timeout);
-    }, [router]);
+    // sportType 기준 그룹핑 → 카테고리 목록 추출
+    const categories = sports
+        ? Array.from(new Set(sports.map((s) => s.sportType)))
+        : [];
 
-    if (!isReady) {
-        return <div className="flex items-center justify-center min-h-screen">로딩 중...</div>;
-    }
+    // 선택된 카테고리의 세부 종목
+    const filteredSports = sports?.filter((s) => s.sportType === selectedCategory) || [];
 
-    // 미인증 시 로그인으로
-    if (!isAuthenticated) {
-        router.push(ROUTES.LOGIN);
-        return null;
-    }
+    // 파일 유효성 에러 메시지
+    const getFileError = (f: File): string => {
+        if (!(APP_CONFIG.ACCEPTED_VIDEO_TYPES as readonly string[]).includes(f.type)) {
+            return MESSAGES.UPLOAD.INVALID_TYPE;
+        }
+        if (f.size > APP_CONFIG.MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+            return MESSAGES.UPLOAD.SIZE_EXCEEDED;
+        }
+        return '';
+    };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        // 파일 타입 체크
-        const validTypes: string[] = [...APP_CONFIG.ACCEPTED_VIDEO_TYPES];
-
-        if (!validTypes.includes(file.type)) {
-            setError(MESSAGES.UPLOAD.INVALID_TYPE);
+    const handleFileSelect = (f: File) => {
+        const err = getFileError(f);
+        if (err) {
+            setUploadError(err);
             return;
         }
-
-        // 파일 크기 체크
-        const maxSize = APP_CONFIG.MAX_VIDEO_SIZE_MB * 1024 * 1024;
-        if (file.size > maxSize) {
-            setError(MESSAGES.UPLOAD.SIZE_EXCEEDED);
-            return;
-        }
-
-        setError('');
-        setSelectedFile(file);
+        setUploadError('');
+        setFile(f);
     };
 
     const handleUpload = async () => {
-        if (!selectedSportId || !selectedFile) {
-            setError(MESSAGES.UPLOAD.SELECT_REQUIRED);
-            return;
-        }
-
-        setError('');
+        if (!selectedSport || !file) return;
+        setUploadError('');
+        setUploadProgress(0);
 
         try {
-            const result = await upload.mutateAsync({
-                sportId: selectedSportId,
-                file: selectedFile,
+            const result = await uploadMutation.mutateAsync({
+                sportId: selectedSport.id,
+                file,
             });
-
-            // 업로드 성공 → 결과 페이지로 이동 (폴링 시작)
-            router.push(ROUTES.RESULT(result.motionId));
+            // 백엔드 응답이 { id } 또는 { motionId } 일 수 있음
+            const motionId = result?.id ?? result?.motionId;
+            if (!motionId) {
+                console.error('Upload response missing id:', result);
+                setUploadError(MESSAGES.UPLOAD.UPLOAD_FAILED);
+                return;
+            }
+            router.push(ROUTES.RESULT(motionId));
         } catch {
-            setError(MESSAGES.UPLOAD.UPLOAD_FAILED);
+            setUploadError(MESSAGES.UPLOAD.UPLOAD_FAILED);
         }
     };
 
+    // Breadcrumb items
+    const breadcrumbItems = [
+        {
+            label: '카테고리',
+            onClick: step !== 'category' ? () => {
+                setStep('category');
+                setSelectedCategory(null);
+                setSelectedSport(null);
+                setFile(null);
+            } : undefined,
+        },
+        ...(selectedCategory ? [{
+            label: selectedCategory === 'golf' ? '골프' : selectedCategory === 'weight' ? '웨이트' : selectedCategory,
+            onClick: step === 'file' ? () => {
+                setStep('sport');
+                setSelectedSport(null);
+                setFile(null);
+            } : undefined,
+        }] : []),
+        ...(selectedSport ? [{
+            label: selectedSport.subCategory,
+        }] : []),
+    ];
+
     return (
-        <div className="flex items-center justify-center min-h-screen p-4">
-            <Card className="w-full max-w-lg">
-                <CardHeader>
-                    <CardTitle className="text-2xl text-center">영상 업로드</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+            <Breadcrumb items={breadcrumbItems} />
 
-                    {/* 종목 선택 */}
-                    <div className="space-y-2">
-                        <Label>종목 선택</Label>
-                        {sportsLoading ? (
-                            <p className="text-sm text-gray-500">종목 불러오는 중...</p>
-                        ) : (
-                            <div className="grid grid-cols-2 gap-2">
-                                {sports?.map((sport) => (
-                                    <button
-                                        key={sport.id}
-                                        type="button"
-                                        onClick={() => setSelectedSportId(sport.id)}
-                                        className={`p-3 rounded-lg border text-sm text-left transition-colors ${
-                                            selectedSportId === sport.id
-                                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                        }`}
-                                    >
-                                        <div className="font-medium">{sport.sportType}</div>
-                                        <div className="text-xs text-gray-500">{sport.subCategory}</div>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+            {/* Loading */}
+            {sportsLoading && (
+                <div className="flex items-center justify-center py-20">
+                    <Loader2 className={`w-8 h-8 animate-spin ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
+                </div>
+            )}
 
-                    {/* 영상 선택 */}
-                    <div className="space-y-2">
-                        <Label>영상 파일</Label>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="video/mp4,video/quicktime,video/x-msvideo"
-                            onChange={handleFileChange}
-                            className="hidden"
-                        />
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full"
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            {selectedFile ? selectedFile.name : '영상 파일 선택'}
-                        </Button>
-                        {selectedFile && (
-                            <p className="text-xs text-gray-500">
-                                {(selectedFile.size / 1024 / 1024).toFixed(1)} MB
-                            </p>
-                        )}
-                    </div>
+            {/* Step 1: Category */}
+            {!sportsLoading && step === 'category' && (
+                <CategoryStep
+                    categories={categories}
+                    onSelect={(cat) => {
+                        setSelectedCategory(cat);
+                        setStep('sport');
+                    }}
+                />
+            )}
 
-                    {/* 에러 메시지 */}
-                    {error && <p className="text-sm text-red-500">{error}</p>}
+            {/* Step 2: Sport */}
+            {step === 'sport' && (
+                <SportStep
+                    sports={filteredSports}
+                    onSelect={(sport) => {
+                        setSelectedSport(sport);
+                        setStep('file');
+                    }}
+                />
+            )}
 
-                    {/* 업로드 버튼 */}
-                    <Button
-                        className="w-full"
-                        onClick={handleUpload}
-                        disabled={!selectedSportId || !selectedFile || upload.isPending}
-                    >
-                        {upload.isPending ? '업로드 중...' : '분석 시작'}
-                    </Button>
+            {/* Step 3: File */}
+            {step === 'file' && (
+                <>
+                    <FileUploadStep
+                        file={file}
+                        onFileSelect={handleFileSelect}
+                        onFileRemove={() => {
+                            setFile(null);
+                            setUploadError('');
+                        }}
+                        onUpload={handleUpload}
+                        isUploading={uploadMutation.isPending}
+                        error={uploadError}
+                    />
 
-                </CardContent>
-            </Card>
+                    {uploadMutation.isPending && (
+                        <UploadProgressBar progress={uploadProgress} />
+                    )}
+                </>
+            )}
         </div>
     );
 }

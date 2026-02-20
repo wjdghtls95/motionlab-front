@@ -6,16 +6,20 @@ export interface LoginRequest {
 export interface RegisterRequest {
     email: string;
     password: string;
-    nickname: string;
+    name: string;
 }
 
+// 백엔드 로그인 응답 (flat 구조)
 export interface LoginResponse {
     accessToken: string;
-    user: UserInfo;
+    refreshToken: string;
+    userId: number;
+    email: string;
+    name: string;
 }
 
 export interface UserInfo {
     id: number;
     email: string;
-    nickname: string;
+    name: string;
 }

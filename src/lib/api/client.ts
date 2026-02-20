@@ -17,7 +17,13 @@ apiClient.interceptors.request.use((config) => {
 });
 
 apiClient.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // 백엔드가 { data: ... } 형태로 감싸는 경우 자동 언래핑
+        if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+            response.data = response.data.data;
+        }
+        return response;
+    },
     async (error) => {
         if (error.response?.status === 401) {
             useAuthStore.getState().clearAuth();

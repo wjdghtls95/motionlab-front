@@ -4,4 +4,7 @@ export const ROUTES = {
     REGISTER: '/register',
     UPLOAD: '/upload',
     RESULT: (motionId: number) => `/result/${motionId}`,
+    HISTORY: '/history',
+    SETTINGS: '/settings',
+    PRICING: '/pricing',
 } as const;

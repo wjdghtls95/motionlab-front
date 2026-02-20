@@ -1,128 +1,169 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
-import { useMotionPolling } from '@lib/hooks/use-motion-polling';
-import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
-import { Button } from '@components/ui/button';
-import { MOTION_STATUS } from '@constants/motion-status';
-import { MESSAGES } from '@constants/messages';
-import { ROUTES } from '@constants/routes';
+import { useRouter } from 'next/navigation';
+import { use } from 'react';
+import { ArrowLeft, Home, Upload } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import AnalyzingState from '@/components/result/AnalyzingState';
+import ScoreGauge from '@/components/result/ScoreGauge';
+import AiFeedbackCard from '@/components/result/AiFeedbackCard';
+import ImprovementCard from '@/components/result/ImprovementCard';
+import AngleComparisonBar from '@/components/result/AngleComparisonBar';
+import ResultFailed from '@/components/result/ResultFailed';
+import { useMotionPolling } from '@/lib/hooks/use-motion-polling';
+import { useThemeStore } from '@/lib/store/theme.store';
+import { toKoreanSportLabel } from '@/constants/labels';
+import { ROUTES } from '@/constants/routes';
+import { MOTION_STATUS } from '@/constants/motion-status';
 
-export default function ResultPage() {
-    const params = useParams();
+interface PageProps {
+    params: Promise<{ motionId: string }>;
+}
+
+export default function ResultPage({ params }: PageProps) {
+    const { motionId } = use(params);
     const router = useRouter();
-    const motionId = Number(params.motionId);
+    const theme = useThemeStore((s) => s.theme);
+    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-    const { data: motion, isLoading } = useMotionPolling(motionId);
+    const numericId = Number(motionId);
+    const { data: motion, isLoading } = useMotionPolling(numericId);
 
-    if (isLoading || !motion) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <p className="text-gray-500">불러오는 중...</p>
+    const isAnalyzing =
+        !motion ||
+        motion.status === MOTION_STATUS.PENDING ||
+        motion.status === MOTION_STATUS.PROCESSING ||
+        motion.status === MOTION_STATUS.RETRYING;
+
+    const isCompleted = motion?.status === MOTION_STATUS.COMPLETED;
+    const isFailed = motion?.status === MOTION_STATUS.FAILED;
+
+    // 상단 네비게이션 바
+    const TopNav = () => (
+        <div className="flex items-center justify-between mb-6">
+            <button
+                onClick={() => router.back()}
+                className={`flex items-center gap-1.5 text-sm transition-colors ${isDark ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
+                    }`}
+            >
+                <ArrowLeft className="w-4 h-4" />
+                뒤로가기
+            </button>
+            <div className="flex gap-2">
+                <button
+                    onClick={() => router.push(ROUTES.HOME)}
+                    className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
+                        }`}
+                    title="홈으로"
+                >
+                    <Home className="w-4 h-4" />
+                </button>
             </div>
-        );
-    }
-
-    // 분석 중
-    if (motion.status === MOTION_STATUS.PROCESSING || motion.status === MOTION_STATUS.PENDING) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Card className="w-full max-w-md">
-                    <CardContent className="py-12 text-center space-y-4">
-                        <div className="text-4xl animate-spin">⏳</div>
-                        <p className="text-lg font-medium">{MESSAGES.ANALYSIS.PROCESSING}</p>
-                        <p className="text-sm text-gray-500">상태: {motion.status}</p>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
-
-    // 분석 실패
-    if (motion.status === MOTION_STATUS.FAILED) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Card className="w-full max-w-md">
-                    <CardContent className="py-12 text-center space-y-4">
-                        <div className="text-4xl">❌</div>
-                        <p className="text-lg font-medium">{MESSAGES.ANALYSIS.FAILED}</p>
-                        {motion.errorMessage && (
-                            <p className="text-sm text-red-500">{motion.errorMessage}</p>
-                        )}
-                        <Button onClick={() => router.push(ROUTES.UPLOAD)}>다시 업로드</Button>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
-
-    // 분석 완료
-    return (
-        <div className="flex items-center justify-center min-h-screen p-4">
-            <Card className="w-full max-w-2xl">
-                <CardHeader>
-                    <CardTitle className="text-2xl text-center">분석 결과</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-
-                    {/* 점수 */}
-                    {motion.overallScore !== null && motion.overallScore !== undefined && (
-                        <div className="text-center">
-                            <p className="text-sm text-gray-500">종합 점수</p>
-                            <p className="text-5xl font-bold mt-1">{motion.overallScore}</p>
-                        </div>
-                    )}
-
-                    {/* 피드백 */}
-                    {motion.feedback && (
-                        <div className="space-y-2">
-                            <h3 className="font-semibold text-lg">피드백</h3>
-                            <p className="text-gray-700 bg-gray-50 p-4 rounded-lg">{motion.feedback}</p>
-                        </div>
-                    )}
-
-                    {/* 개선사항 */}
-                    {motion.improvements && motion.improvements.length > 0 && (
-                        <div className="space-y-2">
-                            <h3 className="font-semibold text-lg">개선사항</h3>
-                            <div className="space-y-2">
-                                {motion.improvements.map((item: any, idx: number) => (
-                                    <div key={idx} className="bg-yellow-50 p-3 rounded-lg">
-                                        <p className="font-medium">{item.angle || item.name}</p>
-                                        <p className="text-sm text-gray-600">{item.suggestion || item.message}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 각도 데이터 */}
-                    {motion.result?.angles && (
-                        <div className="space-y-2">
-                            <h3 className="font-semibold text-lg">각도 분석</h3>
-                            <div className="grid grid-cols-2 gap-2">
-                                {Object.entries(motion.result.angles).map(([key, value]) => (
-                                    <div key={key} className="bg-gray-50 p-3 rounded-lg">
-                                        <p className="text-xs text-gray-500">{key}</p>
-                                        <p className="font-medium">{String(value)}°</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 프롬프트 버전 */}
-                    {motion.promptVersion && (
-                        <p className="text-xs text-gray-400 text-right">prompt: {motion.promptVersion}</p>
-                    )}
-
-                    {/* 다시 업로드 */}
-                    <Button className="w-full" onClick={() => router.push(ROUTES.UPLOAD)}>
-                        새 영상 분석하기
-                    </Button>
-
-                </CardContent>
-            </Card>
         </div>
     );
+
+    // 분석 중
+    if (isLoading || isAnalyzing) {
+        return (
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+                <TopNav />
+                <AnalyzingState
+                    status={motion?.status || 'pending'}
+                    onLeave={() => router.push(ROUTES.HOME)}
+                />
+            </div>
+        );
+    }
+
+    // 실패
+    if (isFailed) {
+        return (
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+                <TopNav />
+                <ResultFailed errorMessage={motion?.errorMessage} />
+                <div className="flex gap-3 mt-6">
+                    <Button
+                        onClick={() => router.push(ROUTES.HOME)}
+                        variant="outline"
+                        className={`flex-1 h-11 rounded-xl text-sm ${isDark ? 'border-slate-700' : ''}`}
+                    >
+                        <Home className="w-4 h-4 mr-1.5" />
+                        홈으로
+                    </Button>
+                    <Button
+                        onClick={() => router.push(ROUTES.UPLOAD)}
+                        className="flex-1 h-11 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm"
+                    >
+                        <Upload className="w-4 h-4 mr-1.5" />
+                        다시 분석하기
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // 성공
+    if (isCompleted && motion) {
+        const sportLabel = toKoreanSportLabel(motion.sportType);
+        const subLabel = motion.subCategory;
+
+        return (
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+                <TopNav />
+
+                {/* Score */}
+                {motion.overallScore != null && (
+                    <div className="flex justify-center">
+                        <ScoreGauge score={motion.overallScore} />
+                    </div>
+                )}
+
+                {/* Sport info */}
+                <div className="text-center">
+                    <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                        {sportLabel}{subLabel ? ` · ${subLabel}` : ''}
+                    </p>
+                </div>
+
+                {/* AI Feedback */}
+                {motion.feedback && (
+                    <AiFeedbackCard feedback={motion.feedback} />
+                )}
+
+                {/* Improvements */}
+                {motion.improvements && motion.improvements.length > 0 && (
+                    <ImprovementCard improvements={motion.improvements} />
+                )}
+
+                {/* Angle comparison */}
+                {motion.result?.angles && motion.improvements && (
+                    <AngleComparisonBar
+                        angles={motion.result.angles}
+                        improvements={motion.improvements}
+                    />
+                )}
+
+                {/* Bottom navigation */}
+                <div className="flex gap-3 pt-4">
+                    <Button
+                        onClick={() => router.push(ROUTES.HOME)}
+                        variant="outline"
+                        className={`flex-1 h-12 rounded-xl text-sm ${isDark ? 'border-slate-700' : ''}`}
+                    >
+                        <Home className="w-4 h-4 mr-1.5" />
+                        홈으로
+                    </Button>
+                    <Button
+                        onClick={() => router.push(ROUTES.UPLOAD)}
+                        className="flex-1 h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm"
+                    >
+                        <Upload className="w-4 h-4 mr-1.5" />
+                        새 영상 분석하기
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    return null;
 }
