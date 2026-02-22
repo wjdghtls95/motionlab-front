@@ -3,7 +3,8 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, RefreshCw, ArrowUpDown, Check } from 'lucide-react';
+import { RefreshCw, ArrowUpDown, Check } from 'lucide-react';
+import HistorySkeleton from '@/components/history/HistorySkeleton';
 import { Button } from '@/components/ui/button';
 import HistoryCard from '@/components/dashboard/HistoryCard';
 import EmptyState from '@/components/dashboard/EmptyState';
@@ -143,11 +144,7 @@ export default function HistoryPage() {
             </div>
 
             {/* Loading */}
-            {isLoading && (
-                <div className="flex justify-center py-20">
-                    <Loader2 className={`w-8 h-8 animate-spin ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
-                </div>
-            )}
+            {isLoading && <HistorySkeleton />}
 
             {isError && (
                 <div className="text-center py-10">

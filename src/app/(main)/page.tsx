@@ -3,9 +3,10 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, RefreshCw, Upload } from 'lucide-react';
+import { RefreshCw, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import HeroCard from '@/components/dashboard/HeroCard';
+import DashboardSkeleton from '@/components/dashboard/DashboardSkeleton';
 import GrowthChart from '@/components/dashboard/GrowthChart';
 import HistoryCardList from '@/components/dashboard/HistoryCardList';
 import EmptyState from '@/components/dashboard/EmptyState';
@@ -105,12 +106,7 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-8">
             <HeroCard name={user?.name || '사용자'} />
 
-            {isLoading && (
-                <div className="flex flex-col items-center justify-center py-16 gap-3">
-                    <Loader2 className={`w-8 h-8 animate-spin ${isDark ? 'text-emerald-500' : 'text-emerald-600'}`} />
-                    <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>데이터를 불러오고 있어요...</p>
-                </div>
-            )}
+            {isLoading && <DashboardSkeleton />}
 
             {isError && (
                 <div className={`rounded-xl p-8 text-center ${isDark ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-gray-200'}`}>

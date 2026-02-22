@@ -32,7 +32,7 @@ function timeAgo(dateStr: string): string {
 
 function getMicroCopy(score: number | null): string {
     if (score === null) return '';
-    if (score >= 80) return '훌륭한 자세예요! 🎯';
+    if (score >= 80) return '훌륭한 자세예요!';
     if (score >= 60) return '점수를 더 올려보세요!';
     return '개선사항을 확인해보세요';
 }

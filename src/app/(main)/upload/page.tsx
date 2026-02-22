@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import UploadSkeleton from '@/components/upload/UploadSkeleton';
 import Breadcrumb from '@/components/common/Breadcrumb';
 import CategoryStep from '@/components/upload/CategoryStep';
 import SportStep from '@/components/upload/SportStep';
@@ -116,11 +116,7 @@ export default function UploadPage() {
             <Breadcrumb items={breadcrumbItems} />
 
             {/* Loading */}
-            {sportsLoading && (
-                <div className="flex items-center justify-center py-20">
-                    <Loader2 className={`w-8 h-8 animate-spin ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
-                </div>
-            )}
+            {sportsLoading && <UploadSkeleton />}
 
             {/* Step 1: Category */}
             {!sportsLoading && step === 'category' && (
