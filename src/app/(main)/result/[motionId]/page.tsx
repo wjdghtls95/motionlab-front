@@ -81,7 +81,7 @@ export default function ResultPage({ params }: PageProps) {
             <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
                 <TopNav />
                 <ResultFailed errorMessage={motion?.errorMessage} />
-                <div className="flex gap-3 mt-6">
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
                     <Button
                         onClick={() => router.push(ROUTES.HOME)}
                         variant="outline"
@@ -144,7 +144,7 @@ export default function ResultPage({ params }: PageProps) {
                 )}
 
                 {/* Bottom navigation */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
                     <Button
                         onClick={() => router.push(ROUTES.HOME)}
                         variant="outline"
