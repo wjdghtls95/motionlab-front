@@ -29,7 +29,7 @@ function MiniTooltip({ active, payload, isDark }: {
 
 function MiniDot(props: {
     cx?: number; cy?: number; index?: number;
-    dataLength: number; color: string; isDark: boolean;
+    dataLength: number; color: string
 }) {
     const { cx, cy, index, color } = props;
     if (cx === undefined || cy === undefined || index === undefined) return null;

@@ -180,8 +180,8 @@ export default function GrowthChart({ series, highlightText }: GrowthChartProps)
                                 connectNulls
                                 tooltipType="none"
                                 legendType="none"
-                                dot={false}          // ← 추가
-                                activeDot={false}    // ← 추가
+                                dot={false}
+                                activeDot={false}
                                 animationDuration={CFG.ANIMATION_DURATION}
                             />
                         );

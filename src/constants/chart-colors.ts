@@ -25,7 +25,6 @@ export const MINI_CHART_CONFIG = {
     DOT_RADIUS: 4,
     DOT_ACTIVE_RADIUS: 6,
     DOT_STROKE_WIDTH: 2,
-    DOT_EDGE_OFFSET: 4,        // 첫·마지막 점의 좌우 밀기 px
     GRADIENT_OPACITY_TOP: 0.2,
     GRADIENT_OPACITY_BOTTOM: 0,
     STROKE_WIDTH: 2,
