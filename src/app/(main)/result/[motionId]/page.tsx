@@ -70,6 +70,7 @@ export default function ResultPage({ params }: PageProps) {
                 <AnalyzingState
                     status={motion?.status || 'pending'}
                     onLeave={() => router.push(ROUTES.HOME)}
+                    sportType={motion?.sportType}
                 />
             </div>
         );

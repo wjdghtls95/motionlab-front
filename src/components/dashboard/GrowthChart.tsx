@@ -73,28 +73,32 @@ function CustomTooltip({ active, payload, label, isDark }: {
     );
 }
 
-/* ── 커스텀 dot ── */
+/* ── 커스텀 dot (기본 상태) ── */
 function CustomDot(props: { cx?: number; cy?: number; stroke?: string; value?: number | null }) {
     const { cx, cy, stroke, value } = props;
     if (!cx || !cy || value === null || value === undefined) return null;
+    const color = stroke || '#10b981';
     return (
         <circle
             cx={cx} cy={cy}
             r={CFG.DOT_RADIUS}
-            fill={stroke}
-            stroke="white"
+            fill={color}
+            stroke={color}
             strokeWidth={CFG.DOT_STROKE_WIDTH}
+            strokeOpacity={0.3}
         />
     );
 }
 
+/* ── 커스텀 dot (hover 상태 — 같은 색 글로우) ── */
 function CustomActiveDot(props: { cx?: number; cy?: number; stroke?: string }) {
     const { cx, cy, stroke } = props;
     if (!cx || !cy) return null;
+    const color = stroke || '#10b981';
     return (
         <g>
-            <circle cx={cx} cy={cy} r={CFG.DOT_ACTIVE_GLOW_RADIUS} fill={stroke} opacity={CFG.DOT_ACTIVE_GLOW_OPACITY} />
-            <circle cx={cx} cy={cy} r={CFG.DOT_ACTIVE_RADIUS} fill={stroke} stroke="white" strokeWidth={CFG.DOT_STROKE_WIDTH} />
+            <circle cx={cx} cy={cy} r={CFG.DOT_ACTIVE_GLOW_RADIUS} fill={color} opacity={CFG.DOT_ACTIVE_GLOW_OPACITY} />
+            <circle cx={cx} cy={cy} r={CFG.DOT_ACTIVE_RADIUS} fill={color} fillOpacity={0.1} stroke={color} strokeWidth={CFG.DOT_STROKE_WIDTH} strokeOpacity={0.3} />
         </g>
     );
 }
