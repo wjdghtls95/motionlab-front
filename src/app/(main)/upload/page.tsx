@@ -16,6 +16,7 @@ import { ROUTES } from '@/constants/routes';
 import { APP_CONFIG } from '@/constants/config';
 import { MESSAGES } from '@/constants/messages';
 import type { Sport } from '@/lib/api/sport.api';
+import {toKoreanSportLabel} from "@constants/labels";
 
 type UploadStep = 'category' | 'sport' | 'file';
 
@@ -99,7 +100,7 @@ export default function UploadPage() {
             } : undefined,
         },
         ...(selectedCategory ? [{
-            label: selectedCategory === 'golf' ? '골프' : selectedCategory === 'weight' ? '웨이트' : selectedCategory,
+            label: toKoreanSportLabel(selectedCategory),
             onClick: step === 'file' ? () => {
                 setStep('sport');
                 setSelectedSport(null);

@@ -59,12 +59,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     // 첫 번째 스포츠를 자동으로 열기
     const [expanded, setExpanded] = useState<string[]>([]);
 
-    // useEffect(() => {
-    //     if (sportTrees.length > 0 && expanded.length === 0) {
-    //         setExpanded([sportTrees[0].label]);
-    //     }
-    // }, [sportTrees, expanded.length]);
-
     const toggle = (label: string) =>
         setExpanded((prev) => prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]);
 

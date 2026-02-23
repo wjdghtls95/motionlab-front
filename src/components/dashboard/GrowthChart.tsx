@@ -165,7 +165,6 @@ export default function GrowthChart({ series, highlightText }: GrowthChartProps)
                     />
 
                     {activeSeries.map((s) => {
-                        const hex = CHART_COLORS[s.color as keyof typeof CHART_COLORS] || s.color;
                         return (
                             <Area
                                 key={`area-${s.label}`}
