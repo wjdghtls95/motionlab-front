@@ -31,21 +31,18 @@ function MiniDot(props: {
     cx?: number; cy?: number; index?: number;
     dataLength: number; color: string; isDark: boolean;
 }) {
-    const { cx, cy, index, dataLength, color, isDark } = props;
+    const { cx, cy, index, color } = props;
     if (cx === undefined || cy === undefined || index === undefined) return null;
-
-    let offsetX = 0;
-    if (index === 0) offsetX = MINI_CHART_CONFIG.DOT_EDGE_OFFSET;
-    if (index === dataLength - 1) offsetX = -MINI_CHART_CONFIG.DOT_EDGE_OFFSET;
 
     return (
         <circle
-            cx={cx + offsetX}
+            cx={cx}
             cy={cy}
             r={MINI_CHART_CONFIG.DOT_RADIUS}
             fill={color}
-            stroke={isDark ? '#0f172a' : '#ffffff'}
+            stroke={color}
             strokeWidth={MINI_CHART_CONFIG.DOT_STROKE_WIDTH}
+            strokeOpacity={0.3}
         />
     );
 }
@@ -104,11 +101,15 @@ export default function MiniChartCard({ label, data, color, totalCount }: MiniCh
                                     isDark={isDark}
                                 />
                             )}
-                            activeDot={{
-                                r: MINI_CHART_CONFIG.DOT_ACTIVE_RADIUS,
-                                fill: color,
-                                stroke: isDark ? '#0f172a' : '#ffffff',
-                                strokeWidth: MINI_CHART_CONFIG.DOT_STROKE_WIDTH,
+                            activeDot={(dotProps: any) => {
+                                const { cx, cy } = dotProps;
+                                if (!cx || !cy) return null;
+                                return (
+                                    <g>
+                                        <circle cx={cx} cy={cy} r={MINI_CHART_CONFIG.DOT_ACTIVE_RADIUS + 2} fill={color} opacity={0.2} />
+                                        <circle cx={cx} cy={cy} r={MINI_CHART_CONFIG.DOT_ACTIVE_RADIUS} fill={color} fillOpacity={0.1} stroke={color} strokeWidth={MINI_CHART_CONFIG.DOT_STROKE_WIDTH} strokeOpacity={0.3} />
+                                    </g>
+                                );
                             }}
                             animationDuration={MINI_CHART_CONFIG.ANIMATION_DURATION}
                             connectNulls
