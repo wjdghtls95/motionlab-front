@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { X, Home, Upload, BarChart3, Settings, LogOut, ChevronDown, ChevronRight } from 'lucide-react';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/lib/store/auth.store';
 import { useThemeStore } from '@/lib/store/theme.store';
 import { ROUTES } from '@/constants/routes';
