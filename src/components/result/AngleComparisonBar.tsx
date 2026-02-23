@@ -78,9 +78,9 @@ export default function AngleComparisonBar({ angles, improvements }: AngleCompar
                             </div>
 
                             <div className="flex justify-between text-[10px] mt-0.5">
-                                <span className={isDark ? 'text-slate-600' : 'text-gray-300'}>0°</span>
+                                <span className={isDark ? 'text-slate-600' : 'text-gray-300'}>{APP_CONFIG.LOW_ANGLE_SCALE}°</span>
                                 <span className={isDark ? 'text-slate-500' : 'text-gray-400'}>{idealMin}°~{idealMax}° (이상 범위)</span>
-                                <span className={isDark ? 'text-slate-600' : 'text-gray-300'}>180°</span>
+                                <span className={isDark ? 'text-slate-600' : 'text-gray-300'}>{APP_CONFIG.MAX_ANGLE_SCALE}°</span>
                             </div>
                         </div>
                     );

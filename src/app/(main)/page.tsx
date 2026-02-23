@@ -122,9 +122,6 @@ export default function HomePage() {
 
     const activeData = chartData?.[activeSport];
 
-    console.log('activeSport:', activeSport);
-    console.log('activeData series:', activeData?.series);
-
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-8">
             <HeroCard name={user?.name || '사용자'} />

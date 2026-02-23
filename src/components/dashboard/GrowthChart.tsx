@@ -208,15 +208,13 @@ export default function GrowthChart({ series, highlightText }: GrowthChartProps)
                     {activeSeries.map((s) => (
                         <div key={s.label} className="flex items-center gap-1.5">
                             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: CHART_COLORS[s.color as keyof typeof CHART_COLORS] || s.color }} />
-                            <span className={`text-[${CFG.LEGEND_FONT_SIZE}px] ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                                {s.label}
+                            <span className={isDark ? 'text-slate-400' : 'text-gray-500'} style={{ fontSize: CFG.LEGEND_FONT_SIZE }}>                                {s.label}
                             </span>
                         </div>
                     ))}
                 </div>
                 {highlightText && (
-                    <span className={`text-[${CFG.LEGEND_FONT_SIZE}px] px-2.5 py-0.5 rounded-full ${isDark ? 'bg-slate-800 text-slate-400' : 'bg-gray-100 text-gray-500'}`}>
-                        {highlightText}
+                    <span className={isDark ? 'text-slate-400' : 'text-gray-500'} style={{ fontSize: CFG.LEGEND_FONT_SIZE }}>                        {highlightText}
                     </span>
                 )}
             </div>
