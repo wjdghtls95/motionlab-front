@@ -15,22 +15,9 @@ import { useAuthStore } from '@/lib/store/auth.store';
 import { useThemeStore } from '@/lib/store/theme.store';
 import { MOTION_STATUS } from '@/constants/motion-status';
 import { ROUTES } from '@/constants/routes';
-
-type SportTab = 'golf' | 'weight';
-
-const SUB_CATEGORIES: Record<SportTab, { key: string; label: string; color: string }[]> = {
-    golf: [
-        { key: 'DRIVER', label: 'Driver', color: 'emerald' },
-        { key: 'IRON', label: 'Iron', color: 'blue' },
-        { key: 'WEDGE', label: 'Wedge', color: 'amber' },
-        { key: 'PUTTER', label: 'Putter', color: 'purple' },
-    ],
-    weight: [
-        { key: 'SQUAT', label: 'Squat', color: 'emerald' },
-        { key: 'DEADLIFT', label: 'Deadlift', color: 'blue' },
-        { key: 'BENCH_PRESS', label: 'Bench Press', color: 'amber' },
-    ],
-};
+import {useSports} from "@lib/hooks/use-sports";
+import {CHART_COLORS} from "@constants/chart-colors";
+import {toKoreanSportLabel, toKoreanSubCategoryLabel} from "@constants/labels";
 
 export default function HomePage() {
     const user = useAuthStore((s) => s.user);
@@ -38,7 +25,32 @@ export default function HomePage() {
     const theme = useThemeStore((s) => s.theme);
     const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-    const [activeSport, setActiveSport] = useState<SportTab>('golf');
+    const { data: sports } = useSports();
+
+    const { sportTabs, subCategories } = useMemo(() => {
+        if (!sports) return { sportTabs: [], subCategories: {} as Record<string, { key: string; label: string; color: string }[]> };
+
+        const colorPool = Object.keys(CHART_COLORS);
+        const grouped: Record<string, { key: string; label: string; color: string }[]> = {};
+        const tabs: string[] = [];
+
+        for (const sport of sports) {
+            if (!grouped[sport.sportType]) {
+                grouped[sport.sportType] = [];
+                tabs.push(sport.sportType);
+            }
+            const colorIndex = grouped[sport.sportType].length % colorPool.length;
+            grouped[sport.sportType].push({
+                key: sport.subCategory,
+                label: toKoreanSubCategoryLabel(sport.subCategory),
+                color: colorPool[colorIndex],
+            });
+        }
+
+        return { sportTabs: tabs, subCategories: grouped };
+    }, [sports]);
+
+    const [activeSport, setActiveSport] = useState<string>('golf');
 
     const { data: motions, isLoading, isError, refetch } = useQuery({
         queryKey: ['motions'],
@@ -58,13 +70,13 @@ export default function HomePage() {
             (m) => m.status === MOTION_STATUS.COMPLETED && typeof m.overallScore === 'number',
         );
 
-        const buildSeries = (sport: SportTab) => {
+        const buildSeries = (sport: string) => {
             const sportMotions = completed.filter((m) => m.sportType === sport);
-            const subs = SUB_CATEGORIES[sport];
+            const subs = subCategories[sport] || [];
 
             const series = subs.map((sub) => {
                 const items = sportMotions
-                    .filter((m) => m.subCategory?.toUpperCase() === sub.key)
+                    .filter((m) => m.subCategory?.toUpperCase() === sub.key.toUpperCase())
                     .sort((a, b) => new Date(a.createAt).getTime() - new Date(b.createAt).getTime())
                     .slice(-5);
 
@@ -78,9 +90,11 @@ export default function HomePage() {
 
             // 최고 기록 찾기
             let highlightText = '';
+            
             if (series.length > 0) {
                 let bestLabel = '';
                 let bestScore = 0;
+
                 for (const s of series) {
                     const max = Math.max(...s.data);
                     if (max > bestScore) {
@@ -94,11 +108,13 @@ export default function HomePage() {
             return { series, highlightText };
         };
 
-        return {
-            golf: buildSeries('golf'),
-            weight: buildSeries('weight'),
-        };
-    }, [motions]);
+        const result: Record<string, ReturnType<typeof buildSeries>> = {};
+        for (const tab of sportTabs) {
+            result[tab] = buildSeries(tab);
+        }
+
+        return result;
+    }, [motions, sportTabs, subCategories]);
 
     const activeData = chartData?.[activeSport];
 
@@ -127,13 +143,13 @@ export default function HomePage() {
                             </h2>
 
                             <div className="flex gap-1 mb-2">
-                                {(['golf', 'weight'] as const).map((tab) => (
+                                {sportTabs.map((tab) => (
                                     <button key={tab} onClick={() => setActiveSport(tab)}
-                                        className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeSport === tab
-                                            ? 'bg-emerald-500 text-white'
-                                            : isDark ? 'text-slate-400 hover:bg-slate-800' : 'text-gray-500 hover:bg-gray-100'
+                                            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeSport === tab
+                                                ? 'bg-emerald-500 text-white'
+                                                : isDark ? 'text-slate-400 hover:bg-slate-800' : 'text-gray-500 hover:bg-gray-100'
                                             }`}>
-                                        {tab === 'golf' ? '골프' : '웨이트'}
+                                        {toKoreanSportLabel(tab)}
                                     </button>
                                 ))}
                             </div>
@@ -145,7 +161,7 @@ export default function HomePage() {
                                     <div className="text-center py-5 space-y-2">
                                         <Upload className={`w-4 h-4 mx-auto ${isDark ? 'text-slate-600' : 'text-gray-300'}`} />
                                         <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                                            아직 {activeSport === 'golf' ? '골프' : '웨이트'} 분석 기록이 없어요
+                                            아직 {toKoreanSportLabel(activeSport)} 분석 기록이 없어요
                                         </p>
                                         <Button onClick={() => router.push(ROUTES.UPLOAD)}
                                             className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-4 h-7">

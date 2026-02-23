@@ -15,21 +15,12 @@ function getScoreRange(score: number) {
     return SCORE_RANGES.BAD;
 }
 
-// SVG color mapping from tailwind class to hex
-const COLOR_HEX: Record<string, string> = {
-    'text-green-600': '#16a34a',
-    'text-blue-600': '#2563eb',
-    'text-yellow-600': '#ca8a04',
-    'text-orange-600': '#ea580c',
-    'text-red-600': '#dc2626',
-};
-
 export default function ScoreGauge({ score }: ScoreGaugeProps) {
     const theme = useThemeStore((s) => s.theme);
     const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
     const range = getScoreRange(score);
-    const hex = COLOR_HEX[range.color] || '#10b981';
+    const hex = range.hex;
 
     // SVG circle
     const size = 160;

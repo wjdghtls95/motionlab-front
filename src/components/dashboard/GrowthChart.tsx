@@ -1,6 +1,7 @@
 'use client';
 
 import { useThemeStore } from '@/lib/store/theme.store';
+import { CHART_COLORS } from '@/constants/chart-colors';
 
 interface Series {
     label: string;
@@ -14,14 +15,13 @@ interface GrowthChartProps {
     highlightText?: string;
 }
 
-const COLORS: Record<string, string> = {
-    emerald: '#10b981',
-    blue: '#3b82f6',
-    amber: '#f59e0b',
-    purple: '#a855f7',
-    rose: '#f43f5e',
-    cyan: '#06b6d4',
-};
+const CHART_CONFIG = {
+    W: 360,
+    H: 90,
+    padX: 30,
+    padY: 14,
+    maxPoints: 6,
+} as const;
 
 export default function GrowthChart({ series, highlightText }: GrowthChartProps) {
     const theme = useThemeStore((s) => s.theme);
@@ -41,13 +41,10 @@ export default function GrowthChart({ series, highlightText }: GrowthChartProps)
 
     // 전체 날짜 통합 → X축
     const allDates = [...new Set(activeSeries.flatMap((s) => s.dates))].sort();
-    const maxPoints = Math.min(allDates.length, 6);
+    const maxPoints = Math.min(allDates.length, CHART_CONFIG.maxPoints);
     const xDates = allDates.slice(-maxPoints);
 
-    const W = 360;
-    const H = 90;
-    const padX = 30;
-    const padY = 14;
+    const { W, H, padX, padY } = CHART_CONFIG;
     const chartW = W - padX * 2;
     const chartH = H - padY * 2;
 
@@ -93,7 +90,7 @@ export default function GrowthChart({ series, highlightText }: GrowthChartProps)
 
                 {/* Lines */}
                 {activeSeries.map((s) => {
-                    const stroke = COLORS[s.color] || s.color;
+                    const stroke = CHART_COLORS[s.color as keyof typeof CHART_COLORS] || s.color;
                     const points = s.dates
                         .map((d, i) => ({ x: xPos(d), y: padY + chartH - ((s.data[i] - min) / range) * chartH, val: s.data[i] }))
                         .filter((p) => p.x !== null) as { x: number; y: number; val: number }[];
@@ -126,7 +123,7 @@ export default function GrowthChart({ series, highlightText }: GrowthChartProps)
                 <div className="flex items-center gap-3 flex-wrap">
                     {activeSeries.map((s) => (
                         <div key={s.label} className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[s.color] || s.color }} />
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: CHART_COLORS[s.color as keyof typeof CHART_COLORS] || s.color }} />
                             <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{s.label}</span>
                         </div>
                     ))}

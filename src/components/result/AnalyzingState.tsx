@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Check } from 'lucide-react';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import { useThemeStore } from '@/lib/store/theme.store';
+import { APP_CONFIG } from "@constants/config";
 
 interface AnalyzingStateProps {
     status: string;
@@ -58,7 +59,7 @@ export default function AnalyzingState({ status, onLeave }: AnalyzingStateProps)
                                                 : 'bg-gray-200 text-gray-400'
                                     }`}
                             >
-                                {isCompleted ? '✓' : i + 1}
+                                {isCompleted ? <Check className="w-3 h-3" /> : i + 1}
                             </div>
                             <span
                                 className={`text-sm ${isCompleted || isCurrent
@@ -79,7 +80,7 @@ export default function AnalyzingState({ status, onLeave }: AnalyzingStateProps)
             </p>
 
             {/* Timeout warning */}
-            {elapsedSeconds >= 60 && (
+            {elapsedSeconds >= APP_CONFIG.ANALYSIS_WARNING_SECONDS && (
                 <p className="text-xs text-yellow-500 mt-2">
                     분석이 평소보다 오래 걸리고 있습니다. 잠시만 기다려주세요.
                 </p>

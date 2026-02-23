@@ -13,37 +13,41 @@ import { useThemeStore } from '@/lib/store/theme.store';
 import { ROUTES } from '@/constants/routes';
 import { MOTION_STATUS } from '@/constants/motion-status';
 import type { MotionListItem } from '@/types/motion';
+import {toKoreanSportLabel, toKoreanSubCategoryLabel} from "@constants/labels";
+import {useSports} from "@lib/hooks/use-sports";
 
-type SportFilter = null | 'golf' | 'weight';
-type SubFilter = null | string;
 type SortOrder = 'newest' | 'oldest';
-
-const SUB_CATEGORIES: Record<string, { key: string; label: string }[]> = {
-    golf: [
-        { key: 'DRIVER', label: 'Driver' },
-        { key: 'IRON', label: 'Iron' },
-        { key: 'WEDGE', label: 'Wedge' },
-        { key: 'PUTTER', label: 'Putter' },
-    ],
-    weight: [
-        { key: 'SQUAT', label: 'Squat' },
-        { key: 'DEADLIFT', label: 'Deadlift' },
-        { key: 'BENCH_PRESS', label: 'Bench Press' },
-    ],
-};
-
-const SUB_LABELS: Record<string, string> = {
-    DRIVER: '드라이버', IRON: '아이언', WEDGE: '웨지', PUTTER: '퍼터',
-    SQUAT: '스쿼트', DEADLIFT: '데드리프트', BENCH_PRESS: '벤치프레스',
-};
 
 export default function HistoryPage() {
     const router = useRouter();
     const theme = useThemeStore((s) => s.theme);
     const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-    const [sport, setSport] = useState<SportFilter>(null);
-    const [sub, setSub] = useState<SubFilter>(null);
+    const { data: sports } = useSports();
+
+    // 동적 서브카테고리 맵
+    const { sportTabs, subCategoryMap } = useMemo(() => {
+        if (!sports) return { sportTabs: [] as string[], subCategoryMap: {} as Record<string, { key: string; label: string }[]> };
+
+        const tabs: string[] = [];
+        const map: Record<string, { key: string; label: string }[]> = {};
+
+        for (const sport of sports) {
+            if (!map[sport.sportType]) {
+                map[sport.sportType] = [];
+                tabs.push(sport.sportType);
+            }
+            map[sport.sportType].push({
+                key: sport.subCategory,
+                label: toKoreanSubCategoryLabel(sport.subCategory),
+            });
+        }
+
+        return { sportTabs: tabs, subCategoryMap: map };
+    }, [sports]);
+
+    const [sport, setSport] = useState<string | null>(null);
+    const [sub, setSub] = useState<string | null>(null);
     const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
 
     const { data: motions, isLoading, isError, refetch } = useQuery({
@@ -80,12 +84,12 @@ export default function HistoryPage() {
             if (!groups[k]) groups[k] = [];
             groups[k].push(m);
         }
-        const order = SUB_CATEGORIES[sport]?.map((s) => s.key) || [];
+        const order = subCategoryMap[sport]?.map((s) => s.key) || [];
         order.push('OTHER');
         return Object.entries(groups).sort(([a], [b]) => order.indexOf(a) - order.indexOf(b));
-    }, [filtered, sport, sub]);
+    }, [filtered, sport, sub, subCategoryMap]);
 
-    const handleSport = (s: SportFilter) => {
+    const handleSport = (s: string | null) => {
         setSport(s);
         setSub(null);
     };
@@ -120,20 +124,18 @@ export default function HistoryPage() {
                 </button>
 
                 {/* 종목 */}
-                <button onClick={() => handleSport('golf')}
-                    className={btnClass(sport === 'golf')}>
-                    골프 {sport === 'golf' && <Check className="w-3 h-3 inline ml-0.5" />}
-                </button>
-                <button onClick={() => handleSport('weight')}
-                    className={btnClass(sport === 'weight')}>
-                    웨이트 {sport === 'weight' && <Check className="w-3 h-3 inline ml-0.5" />}
-                </button>
+                {sportTabs.map((tab) => (
+                    <button key={tab} onClick={() => handleSport(tab)}
+                            className={btnClass(sport === tab)}>
+                        {toKoreanSportLabel(tab)} {sport === tab && <Check className="w-3 h-3 inline ml-0.5" />}
+                    </button>
+                ))}
 
                 {/* 서브카테고리 칩 — 종목 선택 시만 */}
                 {sport && (
                     <>
                         <div className={`w-px h-4 mx-0.5 ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`} />
-                        {SUB_CATEGORIES[sport].map((s) => (
+                        {subCategoryMap[sport]?.map((s) => (
                             <button key={s.key} onClick={() => setSub(sub === s.key ? null : s.key)}
                                 className={btnClass(sub === s.key, 'sm')}>
                                 {s.label}
@@ -164,7 +166,7 @@ export default function HistoryPage() {
                                 <div key={subKey}>
                                     <div className="flex items-center gap-2 mb-3">
                                         <h3 className={`text-xs font-semibold ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>
-                                            {SUB_LABELS[subKey] || subKey}
+                                            {toKoreanSubCategoryLabel(subKey)}
                                         </h3>
                                         <span className={`text-[10px] px-1.5 py-0.5 rounded ${isDark ? 'bg-slate-800 text-slate-500' : 'bg-gray-100 text-gray-400'}`}>
                                             {items.length}건

@@ -3,6 +3,7 @@
 import { useThemeStore } from '@/lib/store/theme.store';
 import { toKoreanAngleLabel } from '@/constants/labels';
 import type { Improvement } from '@/types/analysis';
+import {APP_CONFIG} from "@constants/config";
 
 interface AngleComparisonBarProps {
     angles: Record<string, number>;
@@ -45,7 +46,7 @@ export default function AngleComparisonBar({ angles, improvements }: AngleCompar
                     const inRange = deviation === 0;
 
                     // Bar: scale 0~180
-                    const scale = 180;
+                    const scale = APP_CONFIG.MAX_ANGLE_SCALE;
                     const idealStartPct = (idealMin / scale) * 100;
                     const idealWidthPct = ((idealMax - idealMin) / scale) * 100;
                     const currentPct = (current / scale) * 100;

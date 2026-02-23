@@ -27,4 +27,12 @@ export const MESSAGES = {
         COMPLETED: '분석이 완료되었습니다',
         FAILED: '분석에 실패했습니다. 다시 시도해주세요',
     },
+    MICRO_COPY: {
+        SCORE_HIGH: '훌륭한 자세예요!',
+        SCORE_MID: '점수를 더 올려보세요!',
+        SCORE_LOW: '개선사항을 확인해보세요',
+        PROCESSING: '곧 결과가 나옵니다',
+        FAILED: '다시 시도해보세요',
+        COMPLETED: '결과를 확인해보세요'
+    },
 } as const;

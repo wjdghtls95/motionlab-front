@@ -1,6 +1,11 @@
 export const APP_CONFIG = {
+    APP_NAME: 'MotionLab',
     POLLING_INTERVAL: 3000,
     MAX_VIDEO_SIZE_MB: 100,
     ACCESS_TOKEN_EXPIRY: 15 * 60 * 1000,
     ACCEPTED_VIDEO_TYPES: ['video/mp4', 'video/quicktime'],
+    API_TIMEOUT: 30000,
+    ANALYSIS_WARNING_SECONDS: 60,
+    RECENT_ANALYSIS_COUNT: 3,
+    MAX_ANGLE_SCALE: 180,
 } as const;

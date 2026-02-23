@@ -42,3 +42,20 @@ export const SPORT_LABELS: Record<string, string> = {
 export function toKoreanSportLabel(sportType: string): string {
     return SPORT_LABELS[sportType] || sportType;
 }
+
+/**
+ * 서브카테고리 키 → 한국어 라벨
+ */
+export const SUB_CATEGORY_LABELS: Record<string, string> = {
+    DRIVER: '드라이버',
+    IRON: '아이언',
+    WEDGE: '웨지',
+    PUTTER: '퍼터',
+    SQUAT: '스쿼트',
+    DEADLIFT: '데드리프트',
+    BENCH_PRESS: '벤치프레스',
+} as const;
+
+export function toKoreanSubCategoryLabel(subCategory: string): string {
+    return SUB_CATEGORY_LABELS[subCategory] || subCategory;
+}

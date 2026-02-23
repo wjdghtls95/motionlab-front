@@ -8,6 +8,7 @@ import { useAuthStore } from '@/lib/store/auth.store';
 import { useThemeStore } from '@/lib/store/theme.store';
 import { ROUTES } from '@/constants/routes';
 import { MESSAGES } from '@/constants/messages';
+import {APP_CONFIG} from "@constants/config";
 
 type Theme = 'dark' | 'light' | 'system';
 
@@ -109,7 +110,7 @@ export default function SettingsPage() {
             {/* Version */}
             <div className="text-center">
                 <p className={`text-xs ${isDark ? 'text-slate-600' : 'text-gray-300'}`}>
-                    MotionLab v0.1.0
+                    {APP_CONFIG.APP_NAME} v0.1.0
                 </p>
             </div>
 

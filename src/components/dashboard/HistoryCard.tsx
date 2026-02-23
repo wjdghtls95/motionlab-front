@@ -3,6 +3,7 @@
 import { useThemeStore } from '@/lib/store/theme.store';
 import { SCORE_RANGES } from '@/constants/score-ranges';
 import type { MotionListItem } from '@/types/motion';
+import { MESSAGES } from "@/constants/messages";
 
 interface HistoryCardProps {
     motion: MotionListItem;
@@ -32,9 +33,9 @@ function timeAgo(dateStr: string): string {
 
 function getMicroCopy(score: number | null): string {
     if (score === null) return '';
-    if (score >= 80) return '훌륭한 자세예요!';
-    if (score >= 60) return '점수를 더 올려보세요!';
-    return '개선사항을 확인해보세요';
+    if (score >= 80) return MESSAGES.MICRO_COPY.SCORE_HIGH;
+    if (score >= 60) return MESSAGES.MICRO_COPY.SCORE_MID;
+    return MESSAGES.MICRO_COPY.SCORE_LOW;
 }
 
 export default function HistoryCard({ motion, onClick, microCopy }: HistoryCardProps) {
