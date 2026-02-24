@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Loader2, Check, Lightbulb } from 'lucide-react';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import { useThemeStore } from '@/lib/store/theme.store';
@@ -24,6 +24,10 @@ export default function AnalyzingState({ status, onLeave, sportType }: Analyzing
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
     const [tipIndex, setTipIndex] = useState(0);
     const [tipFade, setTipFade] = useState(true);
+    const [isPaused, setIsPaused] = useState(false);
+
+    const touchStartX = useRef<number | null>(null);
+    const autoResumeTimer = useRef<NodeJS.Timeout | null>(null);
 
     const theme = useThemeStore((s) => s.theme);
     const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -49,8 +53,35 @@ export default function AnalyzingState({ status, onLeave, sportType }: Analyzing
         return () => clearInterval(timer);
     }, []);
 
-    // 팁 로테이션 (페이드 아웃 → 변경 → 페이드 인)
+    /* ── 팁 수동 조작 ── */
+    const pauseAutoRotation = useCallback(() => {
+        setIsPaused(true);
+        if (autoResumeTimer.current) clearTimeout(autoResumeTimer.current);
+        autoResumeTimer.current = setTimeout(() => {
+            setIsPaused(false);
+        }, APP_CONFIG.TIP_AUTO_RESUME_DELAY);
+    }, []);
+
+    const goToTip = useCallback((index: number) => {
+        setTipFade(false);
+        setTimeout(() => {
+            setTipIndex(index);
+            setTipFade(true);
+        }, 300);
+        pauseAutoRotation();
+    }, [pauseAutoRotation]);
+
+    const goNext = useCallback(() => {
+        goToTip((tipIndex + 1) % tips.length);
+    }, [tipIndex, tips.length, goToTip]);
+
+    const goPrev = useCallback(() => {
+        goToTip((tipIndex - 1 + tips.length) % tips.length);
+    }, [tipIndex, tips.length, goToTip]);
+
+    /* ── 팁 자동 로테이션 (수동 조작 시 일시정지) ── */
     useEffect(() => {
+        if (isPaused) return;
         const timer = setInterval(() => {
             setTipFade(false);
             setTimeout(() => {
@@ -59,7 +90,28 @@ export default function AnalyzingState({ status, onLeave, sportType }: Analyzing
             }, 300);
         }, APP_CONFIG.TIP_ROTATION_INTERVAL);
         return () => clearInterval(timer);
-    }, [tips.length]);
+    }, [tips.length, isPaused]);
+
+    // cleanup
+    useEffect(() => {
+        return () => {
+            if (autoResumeTimer.current) clearTimeout(autoResumeTimer.current);
+        };
+    }, []);
+
+    /* ── 터치 스와이프 ── */
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        if (touchStartX.current === null) return;
+        const diff = e.changedTouches[0].clientX - touchStartX.current;
+        if (Math.abs(diff) > 40) {
+            diff > 0 ? goPrev() : goNext();
+        }
+        touchStartX.current = null;
+    };
 
     // 가짜 프로그레스 (0~90%까지 서서히, completed면 100%)
     const estimatedSeconds = APP_CONFIG.ANALYSIS_ESTIMATED_SECONDS;
@@ -126,26 +178,36 @@ export default function AnalyzingState({ status, onLeave, sportType }: Analyzing
             </div>
 
             {/* 팁 카드 */}
-            <div className={`w-full max-w-xs mt-6 rounded-xl p-4 ${isDark ? 'bg-slate-900 border border-slate-800' : 'bg-gray-50 border border-gray-200'}`}>
-                <div className="flex items-center gap-1.5 mb-2">
-                    <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-                    <span className={`text-[11px] font-semibold ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                        알고 계셨나요?
+            <div
+                className={`w-full max-w-xs mt-6 rounded-xl p-4 ${isDark ? 'bg-slate-900 border border-slate-800' : 'bg-gray-50 border border-gray-200'}`}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+            >
+                <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5">
+                        <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
+                        <span className={`text-[11px] font-semibold ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                            알고 계셨나요?
+                        </span>
+                    </div>
+                    <span className={`text-[10px] ${isDark ? 'text-slate-600' : 'text-gray-300'}`}>
+                        {tipIndex + 1}/{tips.length}
                     </span>
                 </div>
                 <p
-                    className={`text-sm leading-relaxed transition-opacity duration-300 ${tipFade ? 'opacity-100' : 'opacity-0'} ${isDark ? 'text-slate-300' : 'text-gray-600'}`}
+                    className={`text-sm leading-relaxed transition-opacity duration-300 min-h-[40px] ${tipFade ? 'opacity-100' : 'opacity-0'} ${isDark ? 'text-slate-300' : 'text-gray-600'}`}
                 >
                     {tips[tipIndex]}
                 </p>
-                {/* Dot indicator */}
-                <div className="flex items-center gap-1.5 mt-3">
+                {/* Dot indicator (클릭 가능) */}
+                <div className="flex items-center justify-center gap-1.5 mt-3">
                     {tips.map((_, i) => (
-                        <div
+                        <button
                             key={i}
+                            onClick={() => goToTip(i)}
                             className={`rounded-full transition-all duration-300 ${i === tipIndex
                                 ? 'w-4 h-1.5 bg-emerald-500'
-                                : `w-1.5 h-1.5 ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`
+                                : `w-1.5 h-1.5 ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-300 hover:bg-gray-400'}`
                             }`}
                         />
                     ))}
