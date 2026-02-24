@@ -1,20 +1,23 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { use } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Home, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { MOTION_STATUS } from '@/constants/motion-status';
+import { ROUTES } from '@/constants/routes';
+import { useThemeStore } from '@/lib/store/theme.store';
+import {useMotionPolling} from "@lib/hooks/use-motion-polling";
+import {toKoreanSportLabel} from "@constants/labels";
+
 import AnalyzingState from '@/components/result/AnalyzingState';
+import ResultSkeleton from '@/components/result/ResultSkeleton';
+import ResultFailed from '@/components/result/ResultFailed';
 import ScoreGauge from '@/components/result/ScoreGauge';
 import AiFeedbackCard from '@/components/result/AiFeedbackCard';
 import ImprovementCard from '@/components/result/ImprovementCard';
 import AngleComparisonBar from '@/components/result/AngleComparisonBar';
-import ResultFailed from '@/components/result/ResultFailed';
-import { useMotionPolling } from '@/lib/hooks/use-motion-polling';
-import { useThemeStore } from '@/lib/store/theme.store';
-import { toKoreanSportLabel } from '@/constants/labels';
-import { ROUTES } from '@/constants/routes';
-import { MOTION_STATUS } from '@/constants/motion-status';
+
 
 interface PageProps {
     params: Promise<{ motionId: string }>;
@@ -24,27 +27,34 @@ export default function ResultPage({ params }: PageProps) {
     const { motionId } = use(params);
     const router = useRouter();
     const theme = useThemeStore((s) => s.theme);
-    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const isDark =
+        theme === 'dark' ||
+        (theme === 'system' &&
+            typeof window !== 'undefined' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
 
     const numericId = Number(motionId);
     const { data: motion, isLoading } = useMotionPolling(numericId);
 
+    // 초기 로딩과 분석 중을 분리
     const isAnalyzing =
-        !motion ||
-        motion.status === MOTION_STATUS.PENDING ||
-        motion.status === MOTION_STATUS.PROCESSING ||
-        motion.status === MOTION_STATUS.RETRYING;
+        motion?.status === MOTION_STATUS.PENDING ||
+        motion?.status === MOTION_STATUS.PROCESSING ||
+        motion?.status === MOTION_STATUS.RETRYING;
 
-    const isCompleted = motion?.status === MOTION_STATUS.COMPLETED;
     const isFailed = motion?.status === MOTION_STATUS.FAILED;
+    const isCompleted = motion?.status === MOTION_STATUS.COMPLETED;
 
     // 상단 네비게이션 바
     const TopNav = () => (
         <div className="flex items-center justify-between mb-6">
             <button
                 onClick={() => router.back()}
-                className={`flex items-center gap-1.5 text-sm transition-colors ${isDark ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
-                    }`}
+                className={`flex items-center gap-1.5 text-sm transition-colors ${
+                    isDark
+                        ? 'text-slate-400 hover:text-white'
+                        : 'text-gray-500 hover:text-gray-900'
+                }`}
             >
                 <ArrowLeft className="w-4 h-4" />
                 뒤로가기
@@ -52,8 +62,11 @@ export default function ResultPage({ params }: PageProps) {
             <div className="flex gap-2">
                 <button
                     onClick={() => router.push(ROUTES.HOME)}
-                    className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
-                        }`}
+                    className={`p-2 rounded-lg transition-colors ${
+                        isDark
+                            ? 'hover:bg-slate-800 text-slate-400 hover:text-white'
+                            : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
+                    }`}
                     title="홈으로"
                 >
                     <Home className="w-4 h-4" />
@@ -62,13 +75,23 @@ export default function ResultPage({ params }: PageProps) {
         </div>
     );
 
-    // 분석 중
-    if (isLoading || isAnalyzing) {
+    // ① 초기 데이터 로딩 → ResultSkeleton
+    if (isLoading || !motion) {
+        return (
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+                <TopNav />
+                <ResultSkeleton />
+            </div>
+        );
+    }
+
+    // ② 실제 AI 분석 중 → AnalyzingState
+    if (isAnalyzing) {
         return (
             <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
                 <TopNav />
                 <AnalyzingState
-                    status={motion?.status || 'pending'}
+                    status={motion.status}
                     onLeave={() => router.push(ROUTES.HOME)}
                     sportType={motion?.sportType}
                 />
@@ -76,7 +99,7 @@ export default function ResultPage({ params }: PageProps) {
         );
     }
 
-    // 실패
+    // ③ 실패
     if (isFailed) {
         return (
             <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
@@ -86,7 +109,9 @@ export default function ResultPage({ params }: PageProps) {
                     <Button
                         onClick={() => router.push(ROUTES.HOME)}
                         variant="outline"
-                        className={`flex-1 h-11 rounded-xl text-sm ${isDark ? 'border-slate-700' : ''}`}
+                        className={`flex-1 h-11 rounded-xl text-sm ${
+                            isDark ? 'border-slate-700' : ''
+                        }`}
                     >
                         <Home className="w-4 h-4 mr-1.5" />
                         홈으로
@@ -103,7 +128,7 @@ export default function ResultPage({ params }: PageProps) {
         );
     }
 
-    // 성공
+    // ④ 성공
     if (isCompleted && motion) {
         const sportLabel = toKoreanSportLabel(motion.sportType);
         const subLabel = motion.subCategory;
@@ -121,15 +146,18 @@ export default function ResultPage({ params }: PageProps) {
 
                 {/* Sport info */}
                 <div className="text-center">
-                    <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                        {sportLabel}{subLabel ? ` · ${subLabel}` : ''}
+                    <p
+                        className={`text-sm ${
+                            isDark ? 'text-slate-400' : 'text-gray-500'
+                        }`}
+                    >
+                        {sportLabel}
+                        {subLabel ? ` · ${subLabel}` : ''}
                     </p>
                 </div>
 
                 {/* AI Feedback */}
-                {motion.feedback && (
-                    <AiFeedbackCard feedback={motion.feedback} />
-                )}
+                {motion.feedback && <AiFeedbackCard feedback={motion.feedback} />}
 
                 {/* Improvements */}
                 {motion.improvements && motion.improvements.length > 0 && (
@@ -149,7 +177,9 @@ export default function ResultPage({ params }: PageProps) {
                     <Button
                         onClick={() => router.push(ROUTES.HOME)}
                         variant="outline"
-                        className={`flex-1 h-12 rounded-xl text-sm ${isDark ? 'border-slate-700' : ''}`}
+                        className={`flex-1 h-12 rounded-xl text-sm ${
+                            isDark ? 'border-slate-700' : ''
+                        }`}
                     >
                         <Home className="w-4 h-4 mr-1.5" />
                         홈으로
