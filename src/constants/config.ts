@@ -21,7 +21,6 @@ export const APP_CONFIG = {
     /* ── 팁 카드 ── */
     TIP_ROTATION_INTERVAL: 5000,        // 자동 팁 전환 주기 (ms)
     TIP_AUTO_RESUME_DELAY: 10000,       // 수동 조작 후 자동 전환 재개 대기 (ms)
-    PROGRESS_UPDATE_INTERVAL: 500,      // 프로그레스 바 업데이트 주기 (ms)
 
     /* ── 각도 분석 ── */
     LOW_ANGLE_SCALE: 0,                 // 각도 바 최소값

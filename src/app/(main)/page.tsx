@@ -56,7 +56,7 @@ export default function HomePage() {
 
     const [activeSport, setActiveSport] = useState<string>('golf');
 
-    const { data: motions, isLoading, isError, refetch } = useQuery({
+    const { data: motions, isLoading, isError, isFetching, refetch } = useQuery({
         queryKey: ['motions'],
         queryFn: async () => {
             const res = await motionApi.getList();
@@ -129,12 +129,16 @@ export default function HomePage() {
             {isLoading && <DashboardSkeleton />}
 
             {isError && (
-                <div className={`rounded-xl p-8 text-center ${isDark ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-gray-200'}`}>
-                    <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>데이터를 불러오지 못했습니다</p>
-                    <Button onClick={() => refetch()} variant="outline" className="mt-3 text-sm">
-                        <RefreshCw className="w-4 h-4 mr-1" /> 다시 시도
-                    </Button>
-                </div>
+                isFetching ? (
+                    <DashboardSkeleton />
+                ) : (
+                    <div className={`rounded-xl p-8 text-center ${isDark ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-gray-200'}`}>
+                        <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>데이터를 불러오지 못했습니다</p>
+                        <Button onClick={() => refetch()} variant="outline" className="mt-3 text-sm">
+                            <RefreshCw className="w-4 h-4 mr-1" /> 다시 시도
+                        </Button>
+                    </div>
+                )
             )}
 
             {!isLoading && !isError && (

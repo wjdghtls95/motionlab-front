@@ -18,13 +18,6 @@ export default function ResultSkeleton() {
 
     return (
         <div className="flex flex-col items-center px-4 py-6 gap-6 max-w-md mx-auto w-full">
-            {/* 상단 네비게이션 바 스켈레톤 */}
-            <div className="w-full flex items-center justify-between">
-                <Skeleton className={`w-8 h-8 rounded-full ${barClass}`} />
-                <Skeleton className={`w-24 h-5 rounded ${barClass}`} />
-                <div className="w-8" />
-            </div>
-
             {/* ScoreGauge 영역 - 원형 스켈레톤 */}
             <div className="flex flex-col items-center gap-3 mt-2">
                 <Skeleton className={`w-40 h-40 rounded-full ${barClass}`} />

@@ -50,7 +50,7 @@ export default function HistoryPage() {
     const [sub, setSub] = useState<string | null>(null);
     const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
 
-    const { data: motions, isLoading, isError, refetch } = useQuery({
+    const { data: motions, isLoading, isError, isFetching, refetch } = useQuery({
         queryKey: ['motions'],
         queryFn: async () => {
             const res = await motionApi.getList();
@@ -149,12 +149,16 @@ export default function HistoryPage() {
             {isLoading && <HistorySkeleton />}
 
             {isError && (
-                <div className="text-center py-10">
-                    <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>데이터를 불러오지 못했습니다</p>
-                    <Button onClick={() => refetch()} variant="outline" className="mt-3 text-sm">
-                        <RefreshCw className="w-4 h-4 mr-1" /> 다시 시도
-                    </Button>
-                </div>
+                isFetching ? (
+                    <HistorySkeleton />
+                ) : (
+                    <div className="text-center py-10">
+                        <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>데이터를 불러오지 못했습니다</p>
+                        <Button onClick={() => refetch()} variant="outline" className="mt-3 text-sm">
+                            <RefreshCw className="w-4 h-4 mr-1" /> 다시 시도
+                        </Button>
+                    </div>
+                )
             )}
 
             {/* List */}
