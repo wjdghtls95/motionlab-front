@@ -23,6 +23,42 @@ interface PageProps {
     params: Promise<{ motionId: string }>;
 }
 
+// 파일 상단, export default 위에 선언
+function TopNav({ onBack, onHome, isDark }: {
+    onBack: () => void;
+    onHome: () => void;
+    isDark: boolean;
+}) {
+    return (
+        <div className="flex items-center justify-between mb-6">
+            <button
+                onClick={onBack}
+                className={`flex items-center gap-1.5 text-sm transition-colors ${
+                    isDark
+                        ? 'text-slate-400 hover:text-white'
+                        : 'text-gray-500 hover:text-gray-900'
+                }`}
+            >
+                <ArrowLeft className="w-4 h-4" />
+                뒤로가기
+            </button>
+            <div className="flex gap-2">
+                <button
+                    onClick={onHome}
+                    className={`p-2 rounded-lg transition-colors ${
+                        isDark
+                            ? 'hover:bg-slate-800 text-slate-400 hover:text-white'
+                            : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
+                    }`}
+                    title="홈으로"
+                >
+                    <Home className="w-4 h-4" />
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export default function ResultPage({ params }: PageProps) {
     const { motionId } = use(params);
     const router = useRouter();
@@ -45,41 +81,15 @@ export default function ResultPage({ params }: PageProps) {
     const isFailed = motion?.status === MOTION_STATUS.FAILED;
     const isCompleted = motion?.status === MOTION_STATUS.COMPLETED;
 
-    // 상단 네비게이션 바
-    const TopNav = () => (
-        <div className="flex items-center justify-between mb-6">
-            <button
-                onClick={() => router.back()}
-                className={`flex items-center gap-1.5 text-sm transition-colors ${
-                    isDark
-                        ? 'text-slate-400 hover:text-white'
-                        : 'text-gray-500 hover:text-gray-900'
-                }`}
-            >
-                <ArrowLeft className="w-4 h-4" />
-                뒤로가기
-            </button>
-            <div className="flex gap-2">
-                <button
-                    onClick={() => router.push(ROUTES.HOME)}
-                    className={`p-2 rounded-lg transition-colors ${
-                        isDark
-                            ? 'hover:bg-slate-800 text-slate-400 hover:text-white'
-                            : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
-                    }`}
-                    title="홈으로"
-                >
-                    <Home className="w-4 h-4" />
-                </button>
-            </div>
-        </div>
-    );
-
     // ① 초기 데이터 로딩 → ResultSkeleton
     if (isLoading || !motion) {
         return (
             <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
-                <TopNav />
+                <TopNav
+                    onBack={() => router.back()}
+                    onHome={() => router.push(ROUTES.HOME)}
+                    isDark={isDark}
+                />
                 <ResultSkeleton />
             </div>
         );
@@ -89,7 +99,11 @@ export default function ResultPage({ params }: PageProps) {
     if (isAnalyzing) {
         return (
             <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
-                <TopNav />
+                <TopNav
+                    onBack={() => router.back()}
+                    onHome={() => router.push(ROUTES.HOME)}
+                    isDark={isDark}
+                />
                 <AnalyzingState
                     status={motion.status}
                     onLeave={() => router.push(ROUTES.HOME)}
@@ -103,7 +117,11 @@ export default function ResultPage({ params }: PageProps) {
     if (isFailed) {
         return (
             <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
-                <TopNav />
+                <TopNav
+                    onBack={() => router.back()}
+                    onHome={() => router.push(ROUTES.HOME)}
+                    isDark={isDark}
+                />
                 <ResultFailed errorMessage={motion?.errorMessage} />
                 <div className="flex flex-col sm:flex-row gap-3 mt-6">
                     <Button
@@ -135,7 +153,11 @@ export default function ResultPage({ params }: PageProps) {
 
         return (
             <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-                <TopNav />
+                <TopNav
+                    onBack={() => router.back()}
+                    onHome={() => router.push(ROUTES.HOME)}
+                    isDark={isDark}
+                />
 
                 {/* Score */}
                 {motion.overallScore != null && (

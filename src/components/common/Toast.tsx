@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import { CheckCircle, XCircle, Info, X } from 'lucide-react';
 import { useToastStore } from '@/lib/store/toast.store';
-import { useThemeStore } from '@/lib/store/theme.store';
 
 const ICON_MAP = {
     success: CheckCircle,

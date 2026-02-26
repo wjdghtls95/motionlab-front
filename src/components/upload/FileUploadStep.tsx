@@ -5,7 +5,6 @@ import { Upload, X, FileVideo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useThemeStore } from '@/lib/store/theme.store';
 import { APP_CONFIG } from '@/constants/config';
-import { MESSAGES } from '@/constants/messages';
 
 interface FileUploadStepProps {
     file: File | null;

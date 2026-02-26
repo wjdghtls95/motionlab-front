@@ -16,12 +16,12 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     const theme = useThemeStore((s) => s.theme);
     const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-    const [hydrated, setHydrated] = useState(false);
+    const [hydrated, setHydrated] = useState(() => useAuthStore.persist.hasHydrated());
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true));
-        if (useAuthStore.persist.hasHydrated()) setHydrated(true);
+
         return () => { unsub(); };
     }, []);
 

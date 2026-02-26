@@ -11,6 +11,12 @@ interface MiniChartCardProps {
     totalCount: number;
 }
 
+interface DotProps {
+    cx?: number;
+    cy?: number;
+    index?: number;
+}
+
 function MiniTooltip({ active, payload, isDark }: {
     active?: boolean;
     payload?: Array<{ value: number }>;
@@ -92,16 +98,15 @@ export default function MiniChartCard({ label, data, color, totalCount }: MiniCh
                             stroke={color}
                             strokeWidth={MINI_CHART_CONFIG.STROKE_WIDTH}
                             fill={`url(#mini-gradient-${label})`}
-                            dot={(dotProps: any) => (
+                            dot={(dotProps: DotProps) => (
                                 <MiniDot
                                     key={dotProps.index}
                                     {...dotProps}
                                     dataLength={chartData.length}
                                     color={color}
-                                    isDark={isDark}
                                 />
                             )}
-                            activeDot={(dotProps: any) => {
+                            activeDot={(dotProps: DotProps) => {
                                 const { cx, cy } = dotProps;
                                 if (!cx || !cy) return null;
                                 return (

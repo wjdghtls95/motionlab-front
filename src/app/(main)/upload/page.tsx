@@ -22,9 +22,7 @@ type UploadStep = 'category' | 'sport' | 'file';
 
 export default function UploadPage() {
     const router = useRouter();
-    const addToast = useToastStore((s) => s.addToast);
     const theme = useThemeStore((s) => s.theme);
-    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
     const { data: sports, isLoading: sportsLoading } = useSports();
     const uploadMutation = useUpload();
