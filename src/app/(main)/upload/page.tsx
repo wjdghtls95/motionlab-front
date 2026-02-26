@@ -11,7 +11,6 @@ import UploadProgressBar from '@/components/upload/UploadProgressBar';
 import { useSports } from '@/lib/hooks/use-sports';
 import { useUpload } from '@/lib/hooks/use-upload';
 import { useThemeStore } from '@/lib/store/theme.store';
-import { useToastStore } from '@/lib/store/toast.store';
 import { ROUTES } from '@/constants/routes';
 import { APP_CONFIG } from '@/constants/config';
 import { MESSAGES } from '@/constants/messages';
@@ -22,7 +21,6 @@ type UploadStep = 'category' | 'sport' | 'file';
 
 export default function UploadPage() {
     const router = useRouter();
-    const theme = useThemeStore((s) => s.theme);
 
     const { data: sports, isLoading: sportsLoading } = useSports();
     const uploadMutation = useUpload();
