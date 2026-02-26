@@ -21,7 +21,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
     useEffect(() => {
         const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true));
-        if (useAuthStore.persist.hasHydrated()) setHydrated(true);
+        if (useAuthStore.persist.hasHydrated()) {
+            queueMicrotask(() => setHydrated(true));
+        }
         return () => { unsub(); };
     }, []);
 
