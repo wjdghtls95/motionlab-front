@@ -53,10 +53,10 @@ export default function LoginPage() {
 
         try {
             const response = await authApi.login({ email, password });
-            // 백엔드 응답: { accessToken, refreshToken, userId, email, name }
-            const { accessToken, userId, email: userEmail, name: userName } = response.data;
+            // 백엔드 응답: { accessToken, refreshToken, userId, email, name, role }
+            const { accessToken, refreshToken, userId, email: userEmail, name: userName, role } = response.data;
 
-            setAuth(accessToken, { id: userId, email: userEmail, name: userName });
+            setAuth(accessToken, refreshToken, { id: userId, email: userEmail, name: userName, role });
             addToast(MESSAGES.AUTH.LOGIN_SUCCESS, 'success');
             router.push(ROUTES.HOME);
         } catch {

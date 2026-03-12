@@ -1,3 +1,5 @@
+export type UserRole = 'USER' | 'ADMIN';
+
 export interface LoginRequest {
     email: string;
     password: string;
@@ -16,10 +18,18 @@ export interface LoginResponse {
     userId: number;
     email: string;
     name: string;
+    role: UserRole;
+}
+
+// POST /auth/refresh 응답
+export interface RefreshResponse {
+    accessToken: string;
+    refreshToken: string;
 }
 
 export interface UserInfo {
     id: number;
     email: string;
     name: string;
+    role: UserRole;
 }
