@@ -1,6 +1,6 @@
 import apiClient from './client';
 import { API_ENDPOINTS } from '@/constants/api-endpoints';
-import { LoginRequest, RegisterRequest, LoginResponse } from '@/types/auth';
+import { LoginRequest, RegisterRequest, LoginResponse, RefreshResponse } from '@/types/auth';
 
 export const authApi = {
     login: (data: LoginRequest) =>
@@ -8,4 +8,8 @@ export const authApi = {
 
     register: (data: RegisterRequest) =>
         apiClient.post(API_ENDPOINTS.AUTH.REGISTER, data),
+
+    /** Refresh Token으로 새로운 Access Token 발급 */
+    refresh: (refreshToken: string) =>
+        apiClient.post<RefreshResponse>(API_ENDPOINTS.AUTH.REFRESH, { refreshToken }),
 };
