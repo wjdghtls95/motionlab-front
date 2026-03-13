@@ -12,4 +12,7 @@ export const API_ENDPOINTS = {
     SPORTS: {
         LIST: '/sports',
     },
+    ADMIN: {
+        UPDATE_USER_ROLE: (userId: number) => `/admin/users/${userId}/role`,
+    },
 } as const;
