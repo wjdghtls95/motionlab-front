@@ -4,7 +4,7 @@ import { AnalysisResult, Improvement } from './analysis';
 export interface MotionUploadResponse {
     motionId: number;
     status: MotionStatusType;
-    createAt: string;
+    createdAt: string;
 }
 
 export interface MotionListItem {
@@ -12,7 +12,7 @@ export interface MotionListItem {
     status: MotionStatusType;
     sportType: string;
     subCategory?: string;
-    createAt: string;        // 백엔드 필드명: createAt (no 'd')
+    createdAt: string;
     completedAt: string | null;
     errorCode: string | null;
     errorMessage: string | null;
