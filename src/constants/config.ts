@@ -4,6 +4,7 @@ export const APP_CONFIG = {
 
     /* ── 네트워크 ── */
     POLLING_INTERVAL: 3000,             // 분석 상태 폴링 주기 (ms)
+    MAX_POLL_DURATION_MS: 10 * 60 * 1000, // 폴링 최대 유지 시간 (10분)
     API_TIMEOUT: 30000,                 // API 요청 타임아웃 (ms)
 
     /* ── 인증 ── */
