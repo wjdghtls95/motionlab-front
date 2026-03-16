@@ -81,13 +81,13 @@ export default function HomePage() {
             const series = subs.map((sub) => {
                 const items = sportMotions
                     .filter((m) => m.subCategory?.toUpperCase() === sub.key.toUpperCase())
-                    .sort((a, b) => new Date(a.createAt).getTime() - new Date(b.createAt).getTime())
+                    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
                     .slice(-5);
 
                 return {
                     label: sub.label,
                     data: items.map((m) => m.overallScore as number),
-                    dates: items.map((m) => m.createAt.split('T')[0]),
+                    dates: items.map((m) => m.createdAt.split('T')[0]),
                     color: sub.color,
                 };
             }).filter((s) => s.data.length > 0);
