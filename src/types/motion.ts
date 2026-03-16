@@ -1,6 +1,12 @@
 import { MotionStatusType } from '@/constants/motion-status';
 import { AnalysisResult, Improvement } from './analysis';
 
+export interface MotionUploadResponse {
+    motionId: number;
+    status: MotionStatusType;
+    createAt: string;
+}
+
 export interface MotionListItem {
     id: number;
     status: MotionStatusType;

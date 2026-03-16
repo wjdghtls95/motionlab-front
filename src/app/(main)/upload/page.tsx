@@ -71,14 +71,7 @@ export default function UploadPage() {
                 sportId: selectedSport.id,
                 file,
             });
-            // 백엔드 응답이 { id } 또는 { motionId } 일 수 있음
-            const motionId = result?.id ?? result?.motionId;
-            if (!motionId) {
-                console.error('Upload response missing id:', result);
-                setUploadError(MESSAGES.UPLOAD.UPLOAD_FAILED);
-                return;
-            }
-            router.push(ROUTES.RESULT(motionId));
+            router.push(ROUTES.RESULT(result.motionId));
         } catch {
             setUploadError(MESSAGES.UPLOAD.UPLOAD_FAILED);
         }
