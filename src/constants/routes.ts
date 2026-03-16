@@ -7,4 +7,9 @@ export const ROUTES = {
     HISTORY: '/history',
     SETTINGS: '/settings',
     PRICING: '/pricing',
+    ADMIN: {
+        ROOT: '/admin',
+        USERS: '/admin/users',
+        SPORTS: '/admin/sports',
+    },
 } as const;
