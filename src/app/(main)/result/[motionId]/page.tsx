@@ -70,7 +70,7 @@ export default function ResultPage({ params }: PageProps) {
             window.matchMedia('(prefers-color-scheme: dark)').matches);
 
     const numericId = Number(motionId);
-    const { data: motion, isLoading } = useMotionPolling(numericId);
+    const { data: motion, isLoading, isTimedOut } = useMotionPolling(numericId);
 
     // 초기 로딩과 분석 중을 분리
     const isAnalyzing =
@@ -95,7 +95,21 @@ export default function ResultPage({ params }: PageProps) {
         );
     }
 
-    // ② 실제 AI 분석 중 → AnalyzingState
+    // ② 폴링 타임아웃 → ResultFailed (서버 무응답 안내)
+    if (isTimedOut && isAnalyzing) {
+        return (
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+                <TopNav
+                    onBack={() => router.back()}
+                    onHome={() => router.push(ROUTES.HOME)}
+                    isDark={isDark}
+                />
+                <ResultFailed errorMessage="분석이 예상보다 오래 걸리고 있습니다. 잠시 후 다시 확인하거나 새 영상을 업로드해주세요." />
+            </div>
+        );
+    }
+
+    // ③ 실제 AI 분석 중 → AnalyzingState
     if (isAnalyzing) {
         return (
             <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
