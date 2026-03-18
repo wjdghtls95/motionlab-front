@@ -15,6 +15,13 @@
 
 # testing
 /coverage
+e2e/auth-state.json
+e2e/admin-auth-state.json
+e2e/results/
+e2e/reports/
+playwright-report/
+test-results/
+.last-run.json
 
 # next.js
 /.next/
