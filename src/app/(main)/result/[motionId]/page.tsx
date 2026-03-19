@@ -70,7 +70,7 @@ export default function ResultPage({ params }: PageProps) {
             window.matchMedia('(prefers-color-scheme: dark)').matches);
 
     const numericId = Number(motionId);
-    const { data: motion, isLoading, isTimedOut } = useMotionPolling(numericId);
+    const { data: motion, isLoading, isTimedOut, isNotFound } = useMotionPolling(numericId);
 
     // 초기 로딩과 분석 중을 분리
     const isAnalyzing =
@@ -81,7 +81,38 @@ export default function ResultPage({ params }: PageProps) {
     const isFailed = motion?.status === MOTION_STATUS.FAILED;
     const isCompleted = motion?.status === MOTION_STATUS.COMPLETED;
 
-    // ① 초기 데이터 로딩 → ResultSkeleton
+    // ① 존재하지 않는 motionId → 인라인 에러 메시지
+    if (isNotFound) {
+        return (
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+                <TopNav
+                    onBack={() => router.back()}
+                    onHome={() => router.push(ROUTES.HOME)}
+                    isDark={isDark}
+                />
+                <ResultFailed errorMessage="존재하지 않거나 삭제된 분석 결과입니다." />
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                    <Button
+                        onClick={() => router.push(ROUTES.HOME)}
+                        variant="outline"
+                        className={`flex-1 h-11 rounded-xl text-sm ${isDark ? 'border-slate-700' : ''}`}
+                    >
+                        <Home className="w-4 h-4 mr-1.5" />
+                        홈으로
+                    </Button>
+                    <Button
+                        onClick={() => router.push(ROUTES.UPLOAD)}
+                        className="flex-1 h-11 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm"
+                    >
+                        <Upload className="w-4 h-4 mr-1.5" />
+                        새 영상 분석하기
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // ② 초기 데이터 로딩 → ResultSkeleton
     if (isLoading || !motion) {
         return (
             <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">

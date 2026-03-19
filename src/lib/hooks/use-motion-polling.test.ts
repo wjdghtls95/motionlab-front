@@ -1,5 +1,6 @@
 /**
  * R-010: useMotionPolling 폴링 종료 조건 테스트
+ * R-043: 404 Not Found 처리 테스트
  *
  * 시나리오:
  * - motionId null 이면 폴링 비활성화
@@ -8,10 +9,13 @@
  * - COMPLETED 상태이면 시간 경과와 무관하게 isTimedOut: false
  * - FAILED 상태이면 시간 경과와 무관하게 isTimedOut: false
  * - 데이터를 정상적으로 반환한다
+ * - API 404 응답 시 isNotFound: true, 재시도 없음
+ * - 404 외 에러 시 isNotFound: false
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import axios from 'axios';
 import React from 'react';
 
 // ── 공통 모킹 ──────────────────────────────────────────────────────────────
@@ -50,7 +54,7 @@ vi.mock('@constants/motion-status', () => ({
 
 function createWrapper() {
     const qc = new QueryClient({
-        defaultOptions: { queries: { retry: false } },
+        defaultOptions: { queries: { retry: false, retryDelay: 0 } },
     });
     return function Wrapper({ children }: { children: React.ReactNode }) {
         return React.createElement(QueryClientProvider, { client: qc }, children);
@@ -150,5 +154,45 @@ describe('useMotionPolling', () => {
 
         await waitFor(() => expect(result.current.data?.status).toBe('FAILED'));
         expect(result.current.isTimedOut).toBe(false);
+    });
+
+    it('API 404 응답 시 isNotFound: true, 재시도 없음', async () => {
+        const notFoundError = new axios.AxiosError('Not Found', 'ERR_BAD_REQUEST', undefined, undefined, {
+            status: 404,
+            data: {},
+            statusText: 'Not Found',
+            headers: {},
+            config: {} as never,
+        });
+        mockGetDetail.mockRejectedValue(notFoundError);
+
+        const { useMotionPolling } = await import('./use-motion-polling');
+        const { result } = renderHook(() => useMotionPolling(999), {
+            wrapper: createWrapper(),
+        });
+
+        await waitFor(() => expect(result.current.isError).toBe(true));
+        expect(result.current.isNotFound).toBe(true);
+        // 404는 재시도 없으므로 1회만 호출됨
+        expect(mockGetDetail).toHaveBeenCalledTimes(1);
+    });
+
+    it('404 외 에러(500) 시 isNotFound: false', async () => {
+        const serverError = new axios.AxiosError('Internal Server Error', 'ERR_BAD_RESPONSE', undefined, undefined, {
+            status: 500,
+            data: {},
+            statusText: 'Internal Server Error',
+            headers: {},
+            config: {} as never,
+        });
+        mockGetDetail.mockRejectedValue(serverError);
+
+        const { useMotionPolling } = await import('./use-motion-polling');
+        const { result } = renderHook(() => useMotionPolling(1), {
+            wrapper: createWrapper(),
+        });
+
+        await waitFor(() => expect(result.current.isError).toBe(true));
+        expect(result.current.isNotFound).toBe(false);
     });
 });
