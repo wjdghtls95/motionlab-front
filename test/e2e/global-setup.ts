@@ -51,7 +51,7 @@ async function globalSetup(_config: FullConfig) {
     { accessToken, refreshToken, user },
   );
 
-  await context.storageState({ path: 'e2e/auth-state.json' });
+  await context.storageState({ path: 'test/e2e/auth-state.json' });
   await context.close();
 
   // Save userId for teardown
@@ -89,7 +89,7 @@ async function globalSetup(_config: FullConfig) {
         { accessToken: adminAccessToken, refreshToken: adminRefreshToken, user: adminUser },
       );
 
-      await adminContext.storageState({ path: 'e2e/admin-auth-state.json' });
+      await adminContext.storageState({ path: 'test/e2e/admin-auth-state.json' });
       await adminContext.close();
       process.env.E2E_ADMIN_USER_ID = String(adminUserId);
     }

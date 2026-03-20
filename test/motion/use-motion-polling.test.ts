@@ -68,7 +68,7 @@ describe('useMotionPolling', () => {
     });
 
     it('motionId가 null이면 쿼리가 비활성화된다', async () => {
-        const { useMotionPolling } = await import('./use-motion-polling');
+        const { useMotionPolling } = await import('@/lib/hooks/use-motion-polling');
         const { result } = renderHook(() => useMotionPolling(null), {
             wrapper: createWrapper(),
         });
@@ -80,7 +80,7 @@ describe('useMotionPolling', () => {
     it('API 데이터를 정상적으로 반환한다', async () => {
         mockGetDetail.mockResolvedValue({ data: { status: 'PENDING', id: 1 } });
 
-        const { useMotionPolling } = await import('./use-motion-polling');
+        const { useMotionPolling } = await import('@/lib/hooks/use-motion-polling');
         const { result } = renderHook(() => useMotionPolling(1), {
             wrapper: createWrapper(),
         });
@@ -96,7 +96,7 @@ describe('useMotionPolling', () => {
 
         mockGetDetail.mockResolvedValue({ data: { status: 'PENDING', id: 1 } });
 
-        const { useMotionPolling } = await import('./use-motion-polling');
+        const { useMotionPolling } = await import('@/lib/hooks/use-motion-polling');
         const { result } = renderHook(() => useMotionPolling(1), {
             wrapper: createWrapper(),
         });
@@ -114,7 +114,7 @@ describe('useMotionPolling', () => {
 
         mockGetDetail.mockResolvedValue({ data: { status: 'PENDING', id: 1 } });
 
-        const { useMotionPolling } = await import('./use-motion-polling');
+        const { useMotionPolling } = await import('@/lib/hooks/use-motion-polling');
         const { result } = renderHook(() => useMotionPolling(1), {
             wrapper: createWrapper(),
         });
@@ -130,7 +130,7 @@ describe('useMotionPolling', () => {
 
         mockGetDetail.mockResolvedValue({ data: { status: 'COMPLETED', id: 1 } });
 
-        const { useMotionPolling } = await import('./use-motion-polling');
+        const { useMotionPolling } = await import('@/lib/hooks/use-motion-polling');
         const { result } = renderHook(() => useMotionPolling(1), {
             wrapper: createWrapper(),
         });
@@ -147,7 +147,7 @@ describe('useMotionPolling', () => {
 
         mockGetDetail.mockResolvedValue({ data: { status: 'FAILED', id: 1 } });
 
-        const { useMotionPolling } = await import('./use-motion-polling');
+        const { useMotionPolling } = await import('@/lib/hooks/use-motion-polling');
         const { result } = renderHook(() => useMotionPolling(1), {
             wrapper: createWrapper(),
         });
@@ -166,7 +166,7 @@ describe('useMotionPolling', () => {
         });
         mockGetDetail.mockRejectedValue(notFoundError);
 
-        const { useMotionPolling } = await import('./use-motion-polling');
+        const { useMotionPolling } = await import('@/lib/hooks/use-motion-polling');
         const { result } = renderHook(() => useMotionPolling(999), {
             wrapper: createWrapper(),
         });
@@ -187,7 +187,7 @@ describe('useMotionPolling', () => {
         });
         mockGetDetail.mockRejectedValue(serverError);
 
-        const { useMotionPolling } = await import('./use-motion-polling');
+        const { useMotionPolling } = await import('@/lib/hooks/use-motion-polling');
         const { result } = renderHook(() => useMotionPolling(1), {
             wrapper: createWrapper(),
         });

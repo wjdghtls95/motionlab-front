@@ -24,15 +24,15 @@ Object.defineProperty(window, 'location', { value: locationMock, writable: true 
 
 describe('adminApi', () => {
     let apiClientMock: MockAdapter;
-    let adminApi: typeof import('./admin.api').adminApi;
+    let adminApi: typeof import('@/lib/api/admin.api').adminApi;
 
     beforeEach(async () => {
         vi.resetModules();
         locationMock.href = '';
         mockClearAuth.mockReset();
-        const clientModule = await import('./client');
+        const clientModule = await import('@/lib/api/client');
         apiClientMock = new MockAdapter(clientModule.default);
-        const adminModule = await import('./admin.api');
+        const adminModule = await import('@/lib/api/admin.api');
         adminApi = adminModule.adminApi;
     });
 

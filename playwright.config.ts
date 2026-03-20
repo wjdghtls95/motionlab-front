@@ -5,17 +5,17 @@ const isHeaded = !!process.env.HEADED;
 const hasAdminAccount = !!(process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD);
 
 export default defineConfig({
-  testDir: './e2e',
+  testDir: './test/e2e',
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: false, // 순서 의존성 방지 (auth 공유)
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1, // 테스트 유저 충돌 방지
-  reporter: [['html', { outputFolder: 'e2e/reports' }]],
-  outputDir: './e2e/results',
-  globalSetup: './e2e/global-setup.ts',
-  globalTeardown: './e2e/global-teardown.ts',
+  reporter: [['html', { outputFolder: 'test/e2e/reports' }]],
+  outputDir: './test/e2e/results',
+  globalSetup: './test/e2e/global-setup.ts',
+  globalTeardown: './test/e2e/global-teardown.ts',
   use: {
     baseURL: 'http://localhost:4000',
     trace: 'on-first-retry',
@@ -37,7 +37,7 @@ export default defineConfig({
       dependencies: ['no-auth'],
       use: {
         ...devices['Desktop Chrome'],
-        storageState: 'e2e/auth-state.json',
+        storageState: 'test/e2e/auth-state.json',
       },
     },
     // 3. admin: 관리자 인증 상태, user 완료 후 실행
@@ -49,7 +49,7 @@ export default defineConfig({
             dependencies: ['user'],
             use: {
               ...devices['Desktop Chrome'],
-              storageState: 'e2e/admin-auth-state.json',
+              storageState: 'test/e2e/admin-auth-state.json',
             },
           },
         ]
