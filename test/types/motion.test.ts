@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { MotionListItem, MotionUploadResponse, MotionDetail } from './motion';
+import type { MotionListItem, MotionUploadResponse, MotionDetail } from '@/types/motion';
 
 // 런타임 타입 계약 테스트 — createdAt 필드명 오타(R-024) 수정 후
 // 서버 반환 필드명이 createdAt임을 보장하는 fixture 검증

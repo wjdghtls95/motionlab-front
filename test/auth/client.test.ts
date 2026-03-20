@@ -29,8 +29,8 @@ Object.defineProperty(window, 'location', { value: locationMock, writable: true 
 describe('apiClient 401 인터셉터', () => {
     let apiClientMock: MockAdapter;
     let refreshClientMock: MockAdapter;
-    let apiClient: typeof import('./client').default;
-    let refreshClient: (typeof import('./client'))['refreshClient'];
+    let apiClient: typeof import('@/lib/api/client').default;
+    let refreshClient: (typeof import('@/lib/api/client'))['refreshClient'];
 
     beforeEach(async () => {
         vi.resetModules();
@@ -40,7 +40,7 @@ describe('apiClient 401 인터셉터', () => {
         mockGetState.mockReset();
 
         // 매 테스트마다 모듈 재로드 → isRefreshing / pendingQueue 초기화
-        const clientModule = await import('./client');
+        const clientModule = await import('@/lib/api/client');
         apiClient = clientModule.default;
         refreshClient = clientModule.refreshClient;
 

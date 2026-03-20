@@ -11,7 +11,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import AdminUsersPage from './page';
+import AdminUsersPage from '@/app/(admin)/admin/users/page';
 
 // --- common mocks ---
 vi.mock('@/lib/store/theme.store', () => ({

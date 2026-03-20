@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useAuthStore } from './auth.store';
+import { useAuthStore } from '@/lib/store/auth.store';
 import { UserInfo } from '@/types/auth';
 
 const mockUser: UserInfo = {

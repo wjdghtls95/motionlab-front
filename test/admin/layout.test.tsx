@@ -9,7 +9,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
-import AdminLayout from '../layout';
+import AdminLayout from '@/app/(admin)/layout';
 
 // --- next/navigation mock ---
 const mockRouterPush = vi.fn();

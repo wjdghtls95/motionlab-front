@@ -12,7 +12,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import AdminSportsPage from './page';
+import AdminSportsPage from '@/app/(admin)/admin/sports/page';
 
 // --- common mocks ---
 vi.mock('@/lib/store/theme.store', () => ({
