@@ -6,6 +6,7 @@ import Navbar from '@/components/common/Navbar';
 import Sidebar from '@/components/common/Sidebar';
 import MobileTabBar from '@/components/common/MobileTabBar';
 import Toast from '@/components/common/Toast';
+import BetaBanner from '@/components/common/BetaBanner';
 import { useAuthStore } from '@/lib/store/auth.store';
 import { useThemeStore } from '@/lib/store/theme.store';
 import { ROUTES } from '@/constants/routes';
@@ -44,6 +45,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
     return (
         <div className={`min-h-screen ${isDark ? 'bg-slate-950 text-white' : 'bg-gray-50 text-gray-900'}`}>
+            <BetaBanner />
             <Navbar onMenuClick={() => setSidebarOpen(true)} />
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
             <main className="pt-14 pb-20 sm:pb-6">

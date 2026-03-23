@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-import { X, Home, Upload, BarChart3, Settings, LogOut, ChevronDown, ChevronRight } from 'lucide-react';
+import { X, Home, Upload, BarChart3, Settings, LogOut, ChevronDown, ChevronRight, Shield, Mail } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/lib/store/auth.store';
 import { useThemeStore } from '@/lib/store/theme.store';
@@ -156,11 +156,29 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <div className={`px-3 py-2 text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                         {user?.name || '사용자'}
                     </div>
+
+                    {/* 관리자 링크 (R-064) */}
+                    {user?.role === 'ADMIN' && (
+                        <button onClick={() => navigate(ROUTES.ADMIN.ROOT)}
+                                className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${isDark ? 'text-emerald-400 hover:bg-slate-800/60' : 'text-emerald-600 hover:bg-gray-100'}`}>
+                            <Shield className="w-4 h-4" />
+                            관리자
+                        </button>
+                    )}
+
                     <button onClick={() => navigate(ROUTES.SETTINGS)}
                             className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${isDark ? 'text-slate-400 hover:bg-slate-800/60' : 'text-gray-600 hover:bg-gray-100'}`}>
                         <Settings className="w-4 h-4" />
                         설정
                     </button>
+
+                    {/* 문의하기 (R-068) */}
+                    <a href="mailto:support@motionlab.kr"
+                       className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${isDark ? 'text-slate-400 hover:bg-slate-800/60' : 'text-gray-600 hover:bg-gray-100'}`}>
+                        <Mail className="w-4 h-4" />
+                        문의하기
+                    </a>
+
                     <button onClick={handleLogout}
                             className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-500 rounded-lg transition-colors hover:bg-red-500/10">
                         <LogOut className="w-4 h-4" />
