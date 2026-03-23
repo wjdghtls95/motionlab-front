@@ -64,6 +64,13 @@ export default function PricingPage() {
 
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+            {/* 베타 무제한 안내 배너 (R-061) */}
+            <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 text-center">
+                <p className={`text-sm font-medium ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                    🎉 베타 기간 동안 모든 기능을 무제한 무료로 이용할 수 있습니다
+                </p>
+            </div>
+
             <div className="text-center">
                 <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     요금제
