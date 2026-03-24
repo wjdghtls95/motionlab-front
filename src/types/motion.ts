@@ -4,7 +4,7 @@ import { AnalysisResult, Improvement } from './analysis';
 export interface MotionUploadResponse {
     motionId: number;
     status: MotionStatusType;
-    createdAt: string;
+    createAt: string;
 }
 
 export interface MotionListItem {
@@ -12,7 +12,7 @@ export interface MotionListItem {
     status: MotionStatusType;
     sportType: string;
     subCategory?: string;
-    createdAt: string;
+    createAt: string;
     completedAt: string | null;
     errorCode: string | null;
     errorMessage: string | null;

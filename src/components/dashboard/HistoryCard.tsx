@@ -68,7 +68,7 @@ export default function HistoryCard({ motion, onClick, microCopy }: HistoryCardP
 
             {/* Time */}
             <p className={`text-xs mt-1.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                {timeAgo(motion.createdAt)}
+                {timeAgo(motion.createAt)}
             </p>
 
             {/* Microcopy */}
