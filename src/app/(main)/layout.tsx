@@ -19,6 +19,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
     const [hydrated, setHydrated] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [bannerVisible, setBannerVisible] = useState(() => {
+        if (typeof window === 'undefined') return true;
+        return localStorage.getItem('beta_banner_dismissed') !== 'true';
+    });
 
     useEffect(() => {
         const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true));
@@ -45,10 +49,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
     return (
         <div className={`min-h-screen ${isDark ? 'bg-slate-950 text-white' : 'bg-gray-50 text-gray-900'}`}>
-            <BetaBanner />
-            <Navbar onMenuClick={() => setSidebarOpen(true)} />
+            <BetaBanner onDismiss={() => setBannerVisible(false)} />
+            <Navbar onMenuClick={() => setSidebarOpen(true)} topOffset={bannerVisible ? 36 : 0} />
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-            <main className="pt-14 pb-20 sm:pb-6">
+            <main className={`${bannerVisible ? 'pt-[90px]' : 'pt-14'} pb-20 sm:pb-6`}>
                 {children}
             </main>
             <MobileTabBar />

@@ -14,9 +14,10 @@ const NAV_ITEMS = [
 
 interface NavbarProps {
     onMenuClick: () => void;
+    topOffset?: number;
 }
 
-export default function Navbar({ onMenuClick }: NavbarProps) {
+export default function Navbar({ onMenuClick, topOffset = 0 }: NavbarProps) {
     const router = useRouter();
     const pathname = usePathname();
     const theme = useThemeStore((s) => s.theme);
@@ -24,7 +25,8 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
 
     return (
         <nav
-            className={`fixed top-0 left-0 right-0 z-40 h-14 flex items-center justify-between px-4 sm:px-6 border-b ${isDark
+            style={{ top: topOffset }}
+            className={`fixed left-0 right-0 z-40 h-14 flex items-center justify-between px-4 sm:px-6 border-b ${isDark
                 ? 'bg-slate-950/80 border-slate-800 backdrop-blur-md'
                 : 'bg-white/80 border-gray-200 backdrop-blur-md'
                 }`}
