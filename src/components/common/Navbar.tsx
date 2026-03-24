@@ -25,7 +25,7 @@ export default function Navbar({ onMenuClick, topOffset = 0 }: NavbarProps) {
 
     return (
         <nav
-            style={{ top: topOffset }}
+            style={{ top: topOffset, transition: 'top 0.2s ease' }}
             className={`fixed left-0 right-0 z-40 h-14 flex items-center justify-between px-4 sm:px-6 border-b ${isDark
                 ? 'bg-slate-950/80 border-slate-800 backdrop-blur-md'
                 : 'bg-white/80 border-gray-200 backdrop-blur-md'
