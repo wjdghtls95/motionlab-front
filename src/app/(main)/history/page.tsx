@@ -67,8 +67,8 @@ export default function HistoryPage() {
         if (sub) result = result.filter((m) => m.subCategory?.toUpperCase() === sub);
 
         result.sort((a, b) => {
-            const da = new Date(a.createdAt).getTime();
-            const db = new Date(b.createdAt).getTime();
+            const da = new Date(a.createAt).getTime();
+            const db = new Date(b.createAt).getTime();
             return sortOrder === 'newest' ? db - da : da - db;
         });
 
