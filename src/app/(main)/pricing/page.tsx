@@ -25,7 +25,7 @@ const PLANS: Plan[] = [
         isCurrent: true,
         features: [
             { text: '점수 + AI 피드백 1줄', included: true },
-            { text: '월 3회 분석', included: true },
+            { text: '베타 기간 무제한', included: true },
             { text: '상세 각도 분석', included: false },
             { text: '성장 차트', included: false },
             { text: '팀 기능', included: false },
