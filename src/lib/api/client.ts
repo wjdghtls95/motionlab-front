@@ -89,7 +89,11 @@ apiClient.interceptors.response.use(
                 { refreshToken },
             );
             // refreshClient는 언래핑 인터셉터가 없으므로 .data.data에서 추출
-            const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data;
+            const tokenData = response.data?.data;
+            if (!tokenData?.accessToken || !tokenData?.refreshToken) {
+                throw new Error('Invalid refresh token response structure');
+            }
+            const { accessToken: newAccessToken, refreshToken: newRefreshToken } = tokenData;
 
             useAuthStore.getState().setAccessToken(newAccessToken, newRefreshToken);
             flushQueue(null, newAccessToken);

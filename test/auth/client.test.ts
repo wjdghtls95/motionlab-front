@@ -132,6 +132,45 @@ describe('apiClient 401 인터셉터', () => {
         expect(locationMock.href).toBe('/login');
     });
 
+    it('refresh 응답에 data.data 구조가 없으면 로그아웃하고 /login으로 이동한다', async () => {
+        mockGetState.mockReturnValue({
+            refreshToken: 'valid-refresh',
+            setAccessToken: mockSetAccessToken,
+            clearAuth: mockClearAuth,
+        });
+
+        apiClientMock.onGet('/protected').reply(401);
+        // 응답 구조 누락: data.data 없이 flat 구조로 반환
+        refreshClientMock.onPost('/auth/refresh').reply(200, {
+            accessToken: 'new-access',
+            refreshToken: 'new-refresh',
+        });
+
+        await expect(apiClient.get('/protected')).rejects.toBeDefined();
+
+        expect(mockClearAuth).toHaveBeenCalledTimes(1);
+        expect(locationMock.href).toBe('/login');
+    });
+
+    it('refresh 응답의 accessToken이 누락되면 로그아웃하고 /login으로 이동한다', async () => {
+        mockGetState.mockReturnValue({
+            refreshToken: 'valid-refresh',
+            setAccessToken: mockSetAccessToken,
+            clearAuth: mockClearAuth,
+        });
+
+        apiClientMock.onGet('/protected').reply(401);
+        // accessToken 누락
+        refreshClientMock.onPost('/auth/refresh').reply(200, {
+            data: { refreshToken: 'new-refresh' },
+        });
+
+        await expect(apiClient.get('/protected')).rejects.toBeDefined();
+
+        expect(mockClearAuth).toHaveBeenCalledTimes(1);
+        expect(locationMock.href).toBe('/login');
+    });
+
     it('동시에 여러 401이 발생해도 refresh는 한 번만 호출된다', async () => {
         mockGetState.mockReturnValue({
             refreshToken: 'shared-refresh',
