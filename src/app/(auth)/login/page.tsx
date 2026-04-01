@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
@@ -28,9 +28,12 @@ export default function LoginPage() {
     const [passwordError, setPasswordError] = useState('');
     const [serverError, setServerError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    // useRef로 경합 조건 방지 — state 업데이트 전 마이크로태스크 윈도우에서의 중복 제출 차단
+    const isSubmittingRef = useRef(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmittingRef.current) return;
 
         // 필드별 에러 초기화
         setEmailError('');
@@ -49,6 +52,7 @@ export default function LoginPage() {
         }
         if (hasError) return;
 
+        isSubmittingRef.current = true;
         setIsLoading(true);
 
         try {
@@ -62,6 +66,7 @@ export default function LoginPage() {
         } catch {
             setServerError(MESSAGES.AUTH.LOGIN_FAILED);
         } finally {
+            isSubmittingRef.current = false;
             setIsLoading(false);
         }
     };
