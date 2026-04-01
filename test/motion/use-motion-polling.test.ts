@@ -1,19 +1,20 @@
 /**
- * R-010: useMotionPolling 폴링 종료 조건 테스트
+ * R-082: useMotionPolling 타임아웃 UI 전환 테스트
+ * R-010: 폴링 종료 조건 테스트
  * R-043: 404 Not Found 처리 테스트
  *
  * 시나리오:
  * - motionId null 이면 폴링 비활성화
  * - PENDING 상태에서 타임아웃 미경과 시 isTimedOut: false
- * - PENDING 상태에서 타임아웃 경과 시 isTimedOut: true
- * - COMPLETED 상태이면 시간 경과와 무관하게 isTimedOut: false
- * - FAILED 상태이면 시간 경과와 무관하게 isTimedOut: false
+ * - PENDING 상태에서 MAX_POLL_DURATION_MS 경과 시 isTimedOut: true (setTimeout 기반)
+ * - COMPLETED 상태 도달 후 타이머 경과해도 isTimedOut: false
+ * - FAILED 상태 도달 후 타이머 경과해도 isTimedOut: false
  * - 데이터를 정상적으로 반환한다
  * - API 404 응답 시 isNotFound: true, 재시도 없음
  * - 404 외 에러 시 isNotFound: false
  */
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import axios from 'axios';
 import React from 'react';
@@ -62,7 +63,13 @@ function createWrapper() {
 }
 
 describe('useMotionPolling', () => {
+    beforeEach(() => {
+        // shouldAdvanceTime: true — 실제 시간도 함께 흐르게 하여 TanStack Query 내부 타이머와 충돌 방지
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+    });
+
     afterEach(() => {
+        vi.useRealTimers();
         vi.restoreAllMocks();
         mockGetDetail.mockReset();
     });
@@ -85,15 +92,12 @@ describe('useMotionPolling', () => {
             wrapper: createWrapper(),
         });
 
+        await act(() => vi.advanceTimersByTimeAsync(0));
         await waitFor(() => expect(result.current.data?.status).toBe('PENDING'));
         expect(mockGetDetail).toHaveBeenCalledWith(1);
     });
 
     it('타임아웃 미경과(PENDING) → isTimedOut: false', async () => {
-        // Date.now()가 항상 동일한 값을 반환 → 경과 시간 0
-        const now = 1_000_000;
-        vi.spyOn(Date, 'now').mockReturnValue(now);
-
         mockGetDetail.mockResolvedValue({ data: { status: 'PENDING', id: 1 } });
 
         const { useMotionPolling } = await import('@/lib/hooks/use-motion-polling');
@@ -101,17 +105,12 @@ describe('useMotionPolling', () => {
             wrapper: createWrapper(),
         });
 
+        await act(() => vi.advanceTimersByTimeAsync(0));
         await waitFor(() => expect(result.current.data?.status).toBe('PENDING'));
         expect(result.current.isTimedOut).toBe(false);
     });
 
-    it('타임아웃 경과(PENDING) → isTimedOut: true', async () => {
-        const startTime = 1_000_000;
-        // useRef(Date.now()) 초기화 시 startTime, 이후 렌더에서 타임아웃 경과 시간 반환
-        vi.spyOn(Date, 'now')
-            .mockReturnValueOnce(startTime) // useRef 초기화
-            .mockReturnValue(startTime + MOCK_MAX_POLL_DURATION_MS + 1); // 이후 호출
-
+    it('MAX_POLL_DURATION_MS 경과(PENDING) → isTimedOut: true', async () => {
         mockGetDetail.mockResolvedValue({ data: { status: 'PENDING', id: 1 } });
 
         const { useMotionPolling } = await import('@/lib/hooks/use-motion-polling');
@@ -119,15 +118,16 @@ describe('useMotionPolling', () => {
             wrapper: createWrapper(),
         });
 
-        await waitFor(() => expect(result.current.isTimedOut).toBe(true));
+        await act(() => vi.advanceTimersByTimeAsync(0));
+        await waitFor(() => expect(result.current.data?.status).toBe('PENDING'));
+
+        // 타임아웃 타이머 경과
+        await act(() => vi.advanceTimersByTimeAsync(MOCK_MAX_POLL_DURATION_MS + 1));
+
+        expect(result.current.isTimedOut).toBe(true);
     });
 
-    it('COMPLETED 상태이면 시간 경과와 무관하게 isTimedOut: false', async () => {
-        const startTime = 1_000_000;
-        vi.spyOn(Date, 'now')
-            .mockReturnValueOnce(startTime)
-            .mockReturnValue(startTime + MOCK_MAX_POLL_DURATION_MS + 1);
-
+    it('COMPLETED 상태 도달 후 타이머 경과해도 isTimedOut: false', async () => {
         mockGetDetail.mockResolvedValue({ data: { status: 'COMPLETED', id: 1 } });
 
         const { useMotionPolling } = await import('@/lib/hooks/use-motion-polling');
@@ -135,16 +135,15 @@ describe('useMotionPolling', () => {
             wrapper: createWrapper(),
         });
 
+        await act(() => vi.advanceTimersByTimeAsync(0));
         await waitFor(() => expect(result.current.data?.status).toBe('COMPLETED'));
+
+        await act(() => vi.advanceTimersByTimeAsync(MOCK_MAX_POLL_DURATION_MS + 1));
+
         expect(result.current.isTimedOut).toBe(false);
     });
 
-    it('FAILED 상태이면 시간 경과와 무관하게 isTimedOut: false', async () => {
-        const startTime = 1_000_000;
-        vi.spyOn(Date, 'now')
-            .mockReturnValueOnce(startTime)
-            .mockReturnValue(startTime + MOCK_MAX_POLL_DURATION_MS + 1);
-
+    it('FAILED 상태 도달 후 타이머 경과해도 isTimedOut: false', async () => {
         mockGetDetail.mockResolvedValue({ data: { status: 'FAILED', id: 1 } });
 
         const { useMotionPolling } = await import('@/lib/hooks/use-motion-polling');
@@ -152,7 +151,11 @@ describe('useMotionPolling', () => {
             wrapper: createWrapper(),
         });
 
+        await act(() => vi.advanceTimersByTimeAsync(0));
         await waitFor(() => expect(result.current.data?.status).toBe('FAILED'));
+
+        await act(() => vi.advanceTimersByTimeAsync(MOCK_MAX_POLL_DURATION_MS + 1));
+
         expect(result.current.isTimedOut).toBe(false);
     });
 
@@ -171,6 +174,7 @@ describe('useMotionPolling', () => {
             wrapper: createWrapper(),
         });
 
+        await act(() => vi.advanceTimersByTimeAsync(0));
         await waitFor(() => expect(result.current.isError).toBe(true));
         expect(result.current.isNotFound).toBe(true);
         // 404는 재시도 없으므로 1회만 호출됨
@@ -192,6 +196,7 @@ describe('useMotionPolling', () => {
             wrapper: createWrapper(),
         });
 
+        await act(() => vi.advanceTimersByTimeAsync(0));
         await waitFor(() => expect(result.current.isError).toBe(true));
         expect(result.current.isNotFound).toBe(false);
     });
