@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { motionApi } from '@lib/api/motion.api';
@@ -16,10 +16,10 @@ type TerminalStatus = typeof TERMINAL_STATUSES[number];
  *
  * - COMPLETED 또는 FAILED 상태가 되면 폴링 중단
  * - 마운트 후 MAX_POLL_DURATION_MS(10분) 경과 시 폴링 중단 → isTimedOut: true
+ * - setTimeout으로 타임아웃 시점에 강제 리렌더하여 UI 즉시 전환 보장
  */
 export function useMotionPolling(motionId: number | null) {
-    // eslint-disable-next-line react-hooks/purity
-    const startedAt = useRef(Date.now());
+    const [isTimedOut, setIsTimedOut] = useState(false);
 
     const query = useQuery({
         queryKey: ['motion', motionId],
@@ -38,18 +38,33 @@ export function useMotionPolling(motionId: number | null) {
             if (status && TERMINAL_STATUSES.includes(status as TerminalStatus)) {
                 return false;
             }
-            if (Date.now() - startedAt.current > APP_CONFIG.MAX_POLL_DURATION_MS) {
+            if (isTimedOut) {
                 return false;
             }
             return APP_CONFIG.POLLING_INTERVAL;
         },
     });
 
+    // 타임아웃 시점에 강제 리렌더하여 UI 즉시 전환 보장
+    useEffect(() => {
+        if (!motionId) return;
+
+        const timer = setTimeout(() => {
+            const status = query.data?.status;
+            const isTerminal = status !== undefined && TERMINAL_STATUSES.includes(status as TerminalStatus);
+            if (!isTerminal) {
+                setIsTimedOut(true);
+            }
+        }, APP_CONFIG.MAX_POLL_DURATION_MS);
+
+        return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [motionId]);
+
+    // terminal 상태 도달 시 타임아웃 플래그 해제
     const status = query.data?.status;
     const isTerminal = status !== undefined && TERMINAL_STATUSES.includes(status as TerminalStatus);
-    // eslint-disable-next-line react-hooks/purity
-    const isTimedOut = !isTerminal && Date.now() - startedAt.current > APP_CONFIG.MAX_POLL_DURATION_MS;
     const isNotFound = query.isError && axios.isAxiosError(query.error) && query.error.response?.status === 404;
 
-    return { ...query, isTimedOut, isNotFound };
+    return { ...query, isTimedOut: isTimedOut && !isTerminal, isNotFound };
 }
