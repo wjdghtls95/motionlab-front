@@ -30,6 +30,11 @@ export const useAuthStore = create<AuthState>()(
         }),
         {
             name: 'auth-storage',
+            partialize: (state) => ({
+                refreshToken: state.refreshToken,
+                user: state.user,
+                isAuthenticated: state.isAuthenticated,
+            }),
         },
     ),
 );
