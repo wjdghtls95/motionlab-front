@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useThemeStore } from '@/lib/store/theme.store';
+import { useAuthStore } from '@/lib/store/auth.store';
 
 export default function ThemeProvider({
     children,
@@ -9,6 +10,11 @@ export default function ThemeProvider({
     children: React.ReactNode;
 }) {
     const theme = useThemeStore((s) => s.theme);
+
+    useEffect(() => {
+        useThemeStore.persist.rehydrate();
+        useAuthStore.persist.rehydrate();
+    }, []);
 
     useEffect(() => {
         const root = document.documentElement;
