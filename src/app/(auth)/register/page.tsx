@@ -20,11 +20,12 @@ function getPasswordStrength(pw: string): PasswordStrength {
     if (pw.length === 0) return null;
     if (pw.length < 8) return 'weak';
 
-    const hasLetter = /[a-zA-Z]/.test(pw);
+    const hasLower = /[a-z]/.test(pw);
+    const hasUpper = /[A-Z]/.test(pw);
     const hasNumber = /[0-9]/.test(pw);
-    const hasSpecial = /[^a-zA-Z0-9]/.test(pw);
+    const hasSpecial = /[@$!%*?&]/.test(pw);
 
-    if (hasLetter && hasNumber && hasSpecial) return 'strong';
+    if (hasLower && hasUpper && hasNumber && hasSpecial) return 'strong';
     return 'medium';
 }
 
@@ -65,7 +66,7 @@ export default function RegisterPage() {
         email.trim() !== '' &&
         isEmailValid(email) &&
         password.length >= 8 &&
-        (strength === 'medium' || strength === 'strong') &&
+        strength === 'strong' &&
         passwordsMatch &&
         agree &&
         !isLoading;
@@ -186,7 +187,7 @@ export default function RegisterPage() {
                     )}
 
                     <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                        8자 이상, 영문+숫자+특수문자 포함
+                        8자 이상, 영문 대/소문자·숫자·특수문자(@$!%*?&) 모두 포함
                     </p>
                 </div>
 
