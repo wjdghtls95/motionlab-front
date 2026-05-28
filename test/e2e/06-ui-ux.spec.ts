@@ -47,8 +47,9 @@ test.describe('G. UI/UX', () => {
   test('G-04 에러 메시지 언어 — 한국어로 표시', async ({ page }) => {
     // auth 상태 제거 후 로그인 페이지에서 잘못된 자격증명 테스트
     await page.goto('/login');
+    // localStorage 제거 후 reload — Zustand 메모리 상태까지 초기화
     await page.evaluate(() => localStorage.removeItem('auth-storage'));
-    // 페이지가 /login에 완전히 렌더링될 때까지 대기
+    await page.reload();
     await page.waitForURL('**/login');
     await page.waitForLoadState('networkidle');
 

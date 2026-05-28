@@ -42,6 +42,9 @@ function flushQueue(error: unknown, token: string | null = null) {
     pendingQueue = [];
 }
 
+// 로그인/회원가입 엔드포인트는 401 refresh 인터셉터를 건너뜀 — 실패 시 폼 에러로 처리해야 함
+const AUTH_PASSTHROUGH_PATHS = ['/auth/login', '/auth/register'];
+
 apiClient.interceptors.response.use(
     (response) => {
         // 백엔드가 { data: ... } 형태로 감싸는 경우 자동 언래핑
@@ -52,6 +55,11 @@ apiClient.interceptors.response.use(
     },
     async (error) => {
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
+        const requestUrl = originalRequest.url ?? '';
+
+        if (AUTH_PASSTHROUGH_PATHS.some((path) => requestUrl.includes(path))) {
+            return Promise.reject(error);
+        }
 
         if (error.response?.status !== 401 || originalRequest._retry) {
             return Promise.reject(error);
