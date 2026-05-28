@@ -72,7 +72,8 @@ test.describe('H. 보안', () => {
     // 30초 대기 후 어떤 상태든 500 에러가 노출되지 않으면 통과
     // (result 페이지가 404를 에러 UI로 전환하지 않고 skeleton 유지는 UI 개선 필요 사항으로 별도 등록)
     await page.waitForTimeout(5_000);
-    const bodyText = await page.locator('body').textContent();
+    // innerText 사용: <script> 태그 내 RSC 데이터를 제외한 사용자 가시 텍스트만 검사
+    const bodyText = await page.locator('body').innerText();
     expect(bodyText ?? '').not.toMatch(/500|Internal Server Error/i);
     // 로그인 리다이렉트 OR 에러 UI OR 스켈레톤 중 하나 — 모두 허용 (단, 500 안 됨)
   });
