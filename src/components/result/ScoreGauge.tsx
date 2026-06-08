@@ -59,7 +59,7 @@ export default function ScoreGauge({ score }: ScoreGaugeProps) {
 
             {/* Score + Label (overlaid in center) */}
             <div className="-mt-[110px] flex flex-col items-center mb-6">
-                <p className={`text-5xl font-bold ${range.color}`}>{score}</p>
+                <p data-testid="analysis-score" className={`text-5xl font-bold ${range.color}`}>{score}</p>
                 <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                     {range.label}
                 </p>

@@ -89,8 +89,8 @@ test.describe('B. 업로드', () => {
     await page.locator('input[type="file"]').setInputFiles(FIXTURES.wedge);
     const uploadBtn = page.getByRole('button', { name: '분석 시작' });
     await uploadBtn.click();
-    await uploadBtn.click();
-    // 중복 요청 없이 정상 진행 — 에러 없어야 함 (실패해도 테스트는 통과)
+    await uploadBtn.click({ timeout: 1000 }).catch(() => {});
+    // 중복 요청 없이 정상 진행 — 페이지 이동 후 버튼 사라지면 무시
     await page.waitForTimeout(3_000);
   });
 

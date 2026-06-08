@@ -17,6 +17,7 @@ export default function ImprovementCard({ improvements }: ImprovementCardProps) 
 
     return (
         <div
+            data-testid="improvements"
             className={`rounded-xl p-6 ${isDark ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-gray-200'
                 }`}
         >

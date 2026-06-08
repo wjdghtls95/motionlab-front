@@ -17,7 +17,7 @@ export default function ResultSkeleton() {
     const barClass = isDark ? 'bg-slate-800' : 'bg-gray-200';
 
     return (
-        <div className="flex flex-col items-center px-4 py-6 gap-6 max-w-md mx-auto w-full">
+        <div data-testid="loading" className="flex flex-col items-center px-4 py-6 gap-6 max-w-md mx-auto w-full">
             {/* ScoreGauge 영역 - 원형 스켈레톤 */}
             <div className="flex flex-col items-center gap-3 mt-2">
                 <Skeleton className={`w-40 h-40 rounded-full ${barClass}`} />

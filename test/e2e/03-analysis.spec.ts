@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import { FIXTURES } from './helpers/auth';
+import Redis from 'ioredis';
+
+const BULL_QUEUE = 'bull:motion-analysis-queue';
 
 /**
  * C. 분석 결과 테스트 (5개)
@@ -10,6 +13,41 @@ import { FIXTURES } from './helpers/auth';
 
 test.describe('C. 분석 결과', () => {
   test.setTimeout(120_000);
+
+  test.beforeAll(async () => {
+    // B 테스트에서 쌓인 BullMQ 대기 잡을 제거하여 C 테스트가 큐 대기 없이 실행되도록 한다
+    // Docker Redis는 포트 6380으로 노출 (6379는 로컬 Homebrew Redis와 충돌 방지)
+    const redis = new Redis({ host: 'localhost', port: 6380, db: 4, lazyConnect: true });
+    try {
+      await redis.connect();
+      // 모든 큐 관련 키 확인 (진단용)
+      const allKeys = await redis.keys(`${BULL_QUEUE}:*`);
+      const stateKeys = allKeys.filter(k => !k.match(/motion-\d+$/));
+      console.log(`[beforeAll] queue keys: ${stateKeys.sort().join(', ')}`);
+
+      const waitCount = await redis.llen(`${BULL_QUEUE}:wait`);
+      const activeCount0 = await redis.llen(`${BULL_QUEUE}:active`);
+      const delayedCount = await redis.zcard(`${BULL_QUEUE}:delayed`);
+      const prioritizedCount = await redis.zcard(`${BULL_QUEUE}:prioritized`);
+      console.log(`[beforeAll] queue drain: wait=${waitCount}, active=${activeCount0}, delayed=${delayedCount}, prioritized=${prioritizedCount}`);
+      // 대기 중인 잡과 재시도 대기 잡 모두 제거
+      await redis.del(`${BULL_QUEUE}:wait`);
+      await redis.zremrangebyrank(`${BULL_QUEUE}:delayed`, 0, -1);
+      await redis.zremrangebyrank(`${BULL_QUEUE}:prioritized`, 0, -1);
+      // 현재 active 잡이 완료될 때까지 대기 (최대 90s)
+      for (let i = 0; i < 90; i++) {
+        const activeCount = await redis.llen(`${BULL_QUEUE}:active`);
+        if (activeCount === 0) break;
+        console.log(`[beforeAll] waiting for active=0 (${activeCount} active, iter ${i})`);
+        await new Promise(r => setTimeout(r, 1000));
+      }
+      console.log('[beforeAll] queue drain done');
+    } catch (e) {
+      console.warn('[beforeAll] Redis drain error:', e);
+    } finally {
+      await redis.quit().catch(() => {});
+    }
+  });
 
   test('C-01 분석 완료 → 점수/피드백/개선점 표시', async ({ page }) => {
     test.skip(!fs.existsSync(FIXTURES.wedge), 'test-vi-wedge.mp4 없음 — 스킵');
@@ -34,8 +72,8 @@ test.describe('C. 분석 결과', () => {
       console.warn('[C-01] 분석 실패 UI 감지 — AI 파이프라인 이슈로 인한 분석 실패. 실패 UI는 정상 렌더링됨 (C-04 참고)');
       return;
     }
-    await expect(page.locator('[data-testid="feedback"]').or(page.getByText(/피드백|feedback/i))).toBeVisible();
-    await expect(page.locator('[data-testid="improvements"]').or(page.getByText(/개선|improvement/i))).toBeVisible();
+    await expect(page.locator('[data-testid="feedback"]').or(page.getByText(/피드백|feedback/i)).first()).toBeVisible();
+    await expect(page.locator('[data-testid="improvements"]').or(page.getByText(/개선|improvement/i)).first()).toBeVisible();
   });
 
   test('C-02 분석 중 페이지 새로고침 → 폴링 상태 유지', async ({ page }) => {
