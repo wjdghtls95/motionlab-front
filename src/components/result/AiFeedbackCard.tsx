@@ -31,6 +31,7 @@ export default function AiFeedbackCard({ feedback }: AiFeedbackCardProps) {
 
     return (
         <div
+            data-testid="feedback"
             className={`rounded-xl p-6 ${isDark ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-gray-200'
                 }`}
         >

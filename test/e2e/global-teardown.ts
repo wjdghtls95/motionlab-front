@@ -16,7 +16,8 @@ async function globalTeardown() {
   };
   const mongoUrl = process.env.MONGO_URL ?? 'mongodb://localhost:27017/motionlab';
   const redisHost = process.env.REDIS_HOST ?? '127.0.0.1';
-  const redisPort = Number(process.env.REDIS_PORT ?? 6379);
+  // Docker Redis는 포트 6380으로 노출 (6379는 로컬 Homebrew Redis와 충돌 방지)
+  const redisPort = Number(process.env.REDIS_PORT ?? 6380);
   const uploadDir = process.env.UPLOAD_DIR ?? path.join(__dirname, '../../motionlab-server/uploads');
 
   // --- MySQL cleanup ---

@@ -120,7 +120,7 @@ export default function AnalyzingState({ status, onLeave, sportType }: Analyzing
     const remainingSeconds = Math.max(0, estimatedSeconds - elapsedSeconds);
 
     return (
-        <div className="flex flex-col items-center justify-center py-12 px-4">
+        <div data-testid="polling" className="flex flex-col items-center justify-center py-12 px-4">
             <Loader2 className="w-12 h-12 text-emerald-500 animate-spin mb-6" />
 
             <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
